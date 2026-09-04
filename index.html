@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHARO FANTACY</title>
+    <link rel="stylesheet" href="fantacy.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="First">
+        <nav class="main">
+            <div class="logo-area">
+                <img src="image/1130809f-f594-4e10-a153-f28fe66b2243.png" alt="Pharo Logo" class="nav-logo">
+                <span class="brand-name">PHARO</span>
+            </div>
+            <ul>
+                <li><a href="#" class="active">Pharo League</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Football Community</a></li>
+                <li><a href="#">Events</a></li>
+                <li><a href="#">Media</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <header class="Second">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-logo-wrap">
+                <img src="image/1130809f-f594-4e10-a153-f28fe66b2243.png" alt="Pharo Logo" class="hero-logo">
+            </div>
+            <h1>FANTASY</h1>
+            <p class="tagline">Where Football Legends Are Made</p>
+            <div class="hero-buttons">
+                <a href="#" class="btn btn-primary">Join the League</a>
+                <a href="#" class="btn btn-secondary">Explore Teams</a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-number">100+</span>
+                <span class="stat-label">Players</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">8</span>
+                <span class="stat-label">Teams</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">4</span>
+                <span class="stat-label">Seasons</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="feature-card clickable" id="open-pitch">
+            <div class="feature-icon">&#9917;</div>
+            <h3>Build Your Squad</h3>
+            <p>Pick your dream team from top footballers around the world.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#127942;</div>
+            <h3>Compete & Win</h3>
+            <p>Challenge friends and climb the leaderboard every matchday.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#128200;</div>
+            <h3>Live Scores</h3>
+            <p>Track real-time stats and watch your fantasy points soar.</p>
+        </div>
+    </section>
+
+    <!-- PITCH MODAL (Full Page) -->
+    <div class="pitch-modal" id="pitch-modal">
+        <button class="pitch-close" id="pitch-close">&times;</button>
+        <div class="pitch-modal-topbar">
+            <h2 class="section-title">Your Squad &mdash; 1-4-3-3</h2>
+            <div class="topbar-right">
+                <div class="budget-bar">
+                    <span class="budget-label">Budget:</span>
+                    <span class="budget-amount" id="budget-left">$70M</span>
+                </div>
+                <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
+            </div>
+        </div>
+        <div class="pitch-wrapper">
+            <div class="pitch" id="pitch">
+                <div class="pitch-formation-label">1 - 4 - 3 - 3</div>
+                <div class="pitch-lines">
+                    <div class="center-circle"></div>
+                    <div class="center-dot"></div>
+                    <div class="halfway-line"></div>
+                    <div class="penalty-box-top"></div>
+                    <div class="penalty-box-bottom"></div>
+                    <div class="goal-box-top"></div>
+                    <div class="goal-box-bottom"></div>
+                    <div class="penalty-dot-top"></div>
+                    <div class="penalty-dot-bottom"></div>
+                    <div class="penalty-arc-top"></div>
+                    <div class="penalty-arc-bottom"></div>
+                </div>
+
+                <!-- ATTACKERS -->
+                <div class="player-row forwards-row">
+                    <div class="player-slot" data-position="LW">
+                        <div class="player-jersey jersey-forward"><span class="jersey-number">11</span></div>
+                        <span class="player-pos">LW</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="ST">
+                        <div class="player-jersey jersey-forward"><span class="jersey-number">9</span></div>
+                        <span class="player-pos">ST</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="RW">
+                        <div class="player-jersey jersey-forward"><span class="jersey-number">7</span></div>
+                        <span class="player-pos">RW</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                </div>
+
+                <!-- MIDFIELDERS -->
+                <div class="player-row midfield-row">
+                    <div class="player-slot" data-position="CM1">
+                        <div class="player-jersey jersey-midfield"><span class="jersey-number">8</span></div>
+                        <span class="player-pos">CM</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="CM2">
+                        <div class="player-jersey jersey-midfield"><span class="jersey-number">6</span></div>
+                        <span class="player-pos">CM</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="CM3">
+                        <div class="player-jersey jersey-midfield"><span class="jersey-number">10</span></div>
+                        <span class="player-pos">CM</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                </div>
+
+                <!-- DEFENDERS -->
+                <div class="player-row defense-row">
+                    <div class="player-slot" data-position="LB">
+                        <div class="player-jersey jersey-defense"><span class="jersey-number">3</span></div>
+                        <span class="player-pos">LB</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="CB1">
+                        <div class="player-jersey jersey-defense"><span class="jersey-number">4</span></div>
+                        <span class="player-pos">CB</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="CB2">
+                        <div class="player-jersey jersey-defense"><span class="jersey-number">5</span></div>
+                        <span class="player-pos">CB</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                    <div class="player-slot" data-position="RB">
+                        <div class="player-jersey jersey-defense"><span class="jersey-number">2</span></div>
+                        <span class="player-pos">RB</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                </div>
+
+                <!-- GOALKEEPER -->
+                <div class="player-row keeper-row">
+                    <div class="player-slot" data-position="GK">
+                        <div class="player-jersey jersey-keeper"><span class="jersey-number">1</span></div>
+                        <span class="player-pos">GK</span>
+                        <span class="player-name">Pick a Player</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLAYER PICKER POPUP -->
+    <div class="picker-popup" id="picker-popup">
+        <div class="picker-header">
+            <span class="picker-title" id="picker-title">Choose Player</span>
+            <button class="picker-close-btn" id="picker-close">&times;</button>
+        </div>
+        <div class="picker-list" id="picker-list"></div>
+    </div>
+
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Prove Your Football Knowledge?</h2>
+            <p>Join thousands of managers building their ultimate squads.</p>
+            <a href="#" class="btn btn-primary btn-lg">Get Started Free</a>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="image/1130809f-f594-4e10-a153-f28fe66b2243.png" alt="Pharo Logo" class="footer-logo">
+                <span>PHARO FANTASY</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Contact</a>
+            </div>
+            <p class="footer-copy">&copy; 2026 Pharo Fantasy. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="fantacy.js"></script>
+</body>
+</html>
