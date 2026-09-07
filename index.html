@@ -76,7 +76,11 @@
     <!-- PITCH MODAL (Full Page) -->
     <div class="pitch-modal" id="pitch-modal">
         <button class="pitch-close" id="pitch-close">&times;</button>
-        <div class="pitch-layout">
+        <div class="modal-nav">
+            <button class="modal-nav-btn active" data-view="pick">Pick Team</button>
+            <button class="modal-nav-btn" data-view="transfers">Transfers</button>
+        </div>
+        <div class="pitch-layout" id="pick-view">
             <!-- LEFT: Pitch -->
             <div class="pitch-left">
                 <div class="pitch-topbar">
@@ -194,6 +198,41 @@
                         <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- TRANSFERS VIEW -->
+        <div class="transfer-view" id="transfer-view">
+            <div class="transfer-main">
+                <div class="transfer-topbar">
+                    <h2 class="section-title">Transfers</h2>
+                    <div class="budget-bar">
+                        <span class="budget-label">Budget</span>
+                        <span class="budget-amount" id="transfer-budget-left">$50M</span>
+                    </div>
+                </div>
+                <div class="transfer-controls">
+                    <input type="text" class="transfer-search" id="transfer-search" placeholder="Search players...">
+                    <div class="transfer-filters">
+                        <button class="transfer-filter active" data-filter="ALL">ALL</button>
+                        <button class="transfer-filter" data-filter="GKP">GKP</button>
+                        <button class="transfer-filter" data-filter="DEF">DEF</button>
+                        <button class="transfer-filter" data-filter="MID">MID</button>
+                        <button class="transfer-filter" data-filter="FWD">FWD</button>
+                    </div>
+                </div>
+                <div class="transfer-list" id="transfer-list"></div>
+            </div>
+            <div class="transfer-squad">
+                <h3 class="transfer-squad-title">Your Squad</h3>
+                <div class="transfer-squad-list" id="transfer-squad-list">
+                    <p class="panel-empty-msg">No players in squad yet</p>
+                </div>
+                <div class="transfer-squad-total">
+                    <span>Team Value</span>
+                    <span class="transfer-total-value" id="transfer-total-value">$0M</span>
+                </div>
+                <button class="btn btn-primary save-team-btn" id="transfer-save-btn">Save Team</button>
             </div>
         </div>
     </div>

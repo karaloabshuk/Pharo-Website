@@ -97,6 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const panelSelectedList = document.getElementById('panel-selected-list');
     const saveBtn = document.getElementById('save-team-btn');
 
+    const pickView = document.getElementById('pick-view');
+    const transferView = document.getElementById('transfer-view');
+    const transferSearch = document.getElementById('transfer-search');
+    const transferList = document.getElementById('transfer-list');
+    const transferSquadList = document.getElementById('transfer-squad-list');
+    const transferBudgetDisplay = document.getElementById('transfer-budget-left');
+    const transferTotalValue = document.getElementById('transfer-total-value');
+    const transferSaveBtn = document.getElementById('transfer-save-btn');
+    let transferFilter = 'ALL';
+
     function getAllSlots() {
         return Array.from(document.querySelectorAll('.player-slot'));
     }
@@ -135,6 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const remaining = BUDGET - totalSpent;
         budgetDisplay.textContent = `$${remaining}M`;
         budgetDisplay.style.color = remaining < 10 ? '#e8443a' : '#00d4e8';
+    }
+
+    function updateTransfersBudget() {
+        const remaining = BUDGET - totalSpent;
+        if (transferBudgetDisplay) transferBudgetDisplay.textContent = `$${remaining}M`;
+        if (transferBudgetDisplay) transferBudgetDisplay.style.color = remaining < 10 ? '#e8443a' : '#00d4e8';
+        if (transferTotalValue) transferTotalValue.textContent = `$${totalSpent}M`;
     }
 
     function getUsedPlayers() {
@@ -184,9 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
         viceSlot = null;
         isSaved = false;
         updateBudget();
+        updateTransfersBudget();
         updateSaveBtn();
         renderPanelList();
         renderSelectedPanel();
+        renderTransferList();
+        renderTransferSquad();
     }
 
     function openModal() {
@@ -245,16 +265,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
 
                 if (!isTaken) {
-                    item.addEventListener('click', () => selectPlayer(player));
+                    item.addEventListener('click', () => selectPlayer(player, srcPos));
                 }
                 panelList.appendChild(item);
             });
         });
     }
 
-    // ===== SELECT PLAYER (fill first empty slot in group) =====
-    function selectPlayer(player) {
-        const group = activeTab;
+    // Map a DB source position (GK, LB, CM1...) to its group
+    function groupForSource(srcPos) {
+        const base = srcPos.replace(/[0-9]/g, '');
+        if (base === 'GK') return 'GKP';
+        if (base === 'LB' || base === 'CB' || base === 'RB') return 'DEF';
+        if (base === 'CM') return 'MID';
+        if (base === 'LW' || base === 'ST' || base === 'RW') return 'FWD';
+        return '';
+    }
+
+    // ===== ADD TO SQUAD (fill first empty slot in group) =====
+    function addToSquad(player, srcPos) {
+        const group = groupForSource(srcPos);
         const slots = groupAllocations[group];
         // Find the first empty slot
         let targetPos = null;
@@ -270,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const slot = getSlot(targetPos);
-        selectedPlayers[targetPos] = player;
+        selectedPlayers[targetPos] = { ...player, src: srcPos };
         totalSpent += player.price;
 
         const nameEl = slot.querySelector('.player-name');
@@ -283,8 +313,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { jersey.style.boxShadow = ''; }, 600);
 
         updateBudget();
+        updateTransfersBudget();
         renderPanelList();
         renderSelectedPanel();
+        renderTransferList();
+        renderTransferSquad();
+    }
+
+    // ===== SELECT PLAYER (from right panel) =====
+    function selectPlayer(player, srcPos) {
+        addToSquad(player, srcPos);
     }
 
     // ===== REMOVE PLAYER =====
@@ -312,8 +350,11 @@ document.addEventListener('DOMContentLoaded', () => {
         delete selectedPlayers[pos];
 
         updateBudget();
+        updateTransfersBudget();
         renderPanelList();
         renderSelectedPanel();
+        renderTransferList();
+        renderTransferSquad();
     }
 
     // ===== SET CAPTAIN / VICE =====
@@ -412,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===== SAVE TEAM =====
-    if (saveBtn) saveBtn.addEventListener('click', () => {
+    function saveTeam() {
         if (Object.keys(selectedPlayers).length === 0) {
             showToast('Pick at least one player first!', 'error');
             return;
@@ -434,6 +475,131 @@ document.addEventListener('DOMContentLoaded', () => {
         isSaved = true;
         updateSaveBtn();
         showToast('Team saved successfully!', 'success');
+    }
+
+    if (saveBtn) saveBtn.addEventListener('click', saveTeam);
+    if (transferSaveBtn) transferSaveBtn.addEventListener('click', saveTeam);
+
+    // ===== TRANSFERS =====
+    function allPlayerPool() {
+        const pool = [];
+        Object.keys(playerDB).forEach(srcPos => {
+            playerDB[srcPos].forEach(p => {
+                pool.push({ ...p, src: srcPos });
+            });
+        });
+        return pool;
+    }
+
+    function renderTransferList() {
+        if (!transferList) return;
+        const used = getUsedPlayers();
+        const pool = allPlayerPool().filter(p => {
+            if (transferFilter !== 'ALL' && groupForSource(p.src) !== transferFilter) return false;
+            if (transferSearch && transferSearch.value.trim() && !p.name.toLowerCase().includes(transferSearch.value.trim().toLowerCase())) return false;
+            return true;
+        });
+
+        transferList.innerHTML = '';
+
+        pool.forEach(p => {
+            const inSquad = used.includes(p.name);
+            const item = document.createElement('div');
+            item.className = 'transfer-player';
+            const group = groupForSource(p.src);
+            const short = p.src.replace(/[0-9]/g, '');
+
+            item.innerHTML = `
+                <div class="transfer-player-left">
+                    <div class="panel-player-avatar ${avClass[p.src]}">${short}</div>
+                    <div class="transfer-player-info">
+                        <span class="transfer-player-name">${p.name}</span>
+                        <span class="transfer-player-pos">${group} &middot; ${short}</span>
+                    </div>
+                </div>
+                <div class="transfer-player-right">
+                    <span class="transfer-player-price">$${p.price}M</span>
+                    <button class="transfer-player-action ${inSquad ? 'out' : 'in'}">${inSquad ? 'OUT' : 'IN'}</button>
+                </div>
+            `;
+
+            const btn = item.querySelector('.transfer-player-action');
+            btn.addEventListener('click', () => {
+                if (inSquad) {
+                    // Find the slot holding this player and remove
+                    const posKey = Object.keys(selectedPlayers).find(k => selectedPlayers[k].name === p.name);
+                    if (posKey) removePlayer(posKey);
+                } else {
+                    addToSquad(p, p.src);
+                }
+            });
+
+            transferList.appendChild(item);
+        });
+
+        if (transferList.children.length === 0) {
+            transferList.innerHTML = '<p class="panel-empty-msg">No players match your search</p>';
+        }
+    }
+
+    function renderTransferSquad() {
+        if (!transferSquadList) return;
+        const keys = Object.keys(selectedPlayers);
+        if (keys.length === 0) {
+            transferSquadList.innerHTML = '<p class="panel-empty-msg">No players in squad yet</p>';
+            return;
+        }
+        transferSquadList.innerHTML = '';
+        keys.forEach(pos => {
+            const player = selectedPlayers[pos];
+            const inName = player.name;
+            const inPrice = `$${player.price}M`;
+            const label = posGroupLabel(pos);
+            const div = document.createElement('div');
+            div.className = 'panel-selected-player';
+            div.innerHTML = `
+                <div class="panel-selected-player-left">
+                    <span class="panel-selected-pos">${label}</span>
+                    <span class="panel-selected-name">${inName}</span>
+                </div>
+                <div class="transfer-player-right">
+                    <span class="transfer-player-price">${inPrice}</span>
+                    <button class="transfer-player-action out">&times;</button>
+                </div>
+            `;
+            div.querySelector('.transfer-player-action').addEventListener('click', () => removePlayer(pos));
+            transferSquadList.appendChild(div);
+        });
+    }
+
+    // ===== TRANSFER CONTROLS =====
+    if (transferSearch) transferSearch.addEventListener('input', renderTransferList);
+    document.querySelectorAll('.transfer-filter').forEach(f => {
+        f.addEventListener('click', () => {
+            document.querySelectorAll('.transfer-filter').forEach(x => x.classList.remove('active'));
+            f.classList.add('active');
+            transferFilter = f.dataset.filter;
+            renderTransferList();
+        });
+    });
+
+    // ===== MODAL NAV (Pick / Transfers) =====
+    document.querySelectorAll('.modal-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.modal-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const view = btn.dataset.view;
+            if (view === 'pick') {
+                pickView.classList.remove('hidden');
+                transferView.classList.remove('visible');
+            } else {
+                pickView.classList.add('hidden');
+                transferView.classList.add('visible');
+                renderTransferList();
+                renderTransferSquad();
+                updateTransfersBudget();
+            }
+        });
     });
 
     // ===== LOAD SAVED TEAM =====
@@ -482,9 +648,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             isSaved = true;
             updateBudget();
+            updateTransfersBudget();
             updateSaveBtn();
             renderPanelList();
             renderSelectedPanel();
+            renderTransferList();
+            renderTransferSquad();
         } catch (e) {
             localStorage.removeItem('pharo_saved_team');
         }
