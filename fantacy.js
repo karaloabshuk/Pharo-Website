@@ -62,11 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedPlayers = {};
     let totalSpent = 0;
     let captainPos = null;
-    let vicePos = null;
     let isSaved = false;
     let swapSlotPos = null;
     let subBenchPos = null;
     let subMode = false;
+    let pitchActionPos = null;
 
     // Group -> slot positions on the pitch
     const groupAllocations = {
@@ -214,6 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function markDirty() {
+        isSaved = false;
+        updateSaveBtn();
+    }
+
     function addBadge(slot, letter, badgeClass) {
         const jersey = slot.querySelector('.player-jersey');
         const existing = jersey.querySelector('.jersey-badge');
@@ -232,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetAllSlots() {
+        removePitchAction();
         getAllSlots().forEach(slot => {
             const nameEl = slot.querySelector('.player-name');
             nameEl.textContent = 'Pick a Player';
@@ -243,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedPlayers = {};
         totalSpent = 0;
         captainPos = null;
-        vicePos = null;
         isSaved = false;
         updateBudget();
         updateTransfersBudget();
@@ -298,7 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (player) {
                 hasAny = true;
                 const isCap = captainPos === pos;
-                const isVC = vicePos === pos;
                 div.innerHTML = `
                     <div class="panel-selected-player-left">
                         <span class="panel-selected-pos">${label}</span>
@@ -306,12 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="transfer-player-right">
                         <button class="panel-cv-btn btn-c ${isCap ? 'active' : ''}" title="Make Captain">C</button>
-                        <button class="panel-cv-btn btn-v ${isVC ? 'active' : ''}" title="Make Vice Captain">V</button>
                         <span class="transfer-player-price">$${player.price}M</span>
                     </div>
                 `;
                 div.querySelector('.panel-cv-btn.btn-c').addEventListener('click', (e) => { e.stopPropagation(); setCaptain(pos); });
-                div.querySelector('.panel-cv-btn.btn-v').addEventListener('click', (e) => { e.stopPropagation(); setVice(pos); });
             } else {
                 div.innerHTML = `
                     <div class="panel-selected-player-left">
@@ -395,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateBudget();
         updateTransfersBudget();
+        markDirty();
         renderPickSummary();
         renderTransferList();
         renderTransferSquad();
@@ -417,16 +420,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (slot) removeBadge(slot, 'badge-c');
             captainPos = null;
         }
-        if (vicePos === pos) {
-            if (slot) removeBadge(slot, 'badge-v');
-            vicePos = null;
-        }
 
         totalSpent -= selectedPlayers[pos].price;
         delete selectedPlayers[pos];
 
         updateBudget();
         updateTransfersBudget();
+        markDirty();
         renderPickSummary();
         renderTransferList();
         renderTransferSquad();
@@ -436,9 +436,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function exitSubMode() {
         subMode = false;
         subBenchPos = null;
+        removePitchAction();
         document.querySelectorAll('.sub-option').forEach(el => el.remove());
         document.querySelectorAll('.sub-target').forEach(el => el.classList.remove('sub-target'));
         document.querySelectorAll('.sub-selected').forEach(el => el.classList.remove('sub-selected'));
+    }
+
+    // ===== PITCH PLAYER ACTION (make captain) =====
+    function removePitchAction() {
+        pitchActionPos = null;
+        document.querySelectorAll('.pitch-action').forEach(el => el.remove());
+    }
+
+    function showPitchAction(pos, slot) {
+        document.querySelectorAll('.pitch-action').forEach(el => el.remove());
+        if (subMode || !selectedPlayers[pos]) {
+            pitchActionPos = null;
+            return;
+        }
+        pitchActionPos = pos;
+        const player = selectedPlayers[pos];
+        const isCap = captainPos === pos;
+        const action = document.createElement('div');
+        action.className = 'pitch-action';
+        action.innerHTML = `
+            <span class="pitch-action-name">${player.name}</span>
+            <button class="btn btn-secondary pitch-cap-btn ${isCap ? 'on' : ''}">${isCap ? 'CAPTAIN' : 'MAKE CAPTAIN'}</button>
+        `;
+        action.addEventListener('click', (e) => e.stopPropagation());
+        action.querySelector('.pitch-cap-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            setCaptain(pos);
+            removePitchAction();
+        });
+        slot.appendChild(action);
     }
 
     function showSubOption(pos, rowEl) {
@@ -491,7 +522,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const pos = slot.dataset.position;
             slot.querySelector('.player-jersey').querySelectorAll('.jersey-badge').forEach(b => b.remove());
             if (captainPos === pos) addBadge(slot, 'C', 'badge-c');
-            if (vicePos === pos) addBadge(slot, 'V', 'badge-v');
         });
     }
 
@@ -504,20 +534,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerB) selectedPlayers[posA] = playerB;
         else delete selectedPlayers[posA];
 
-        // Captain / vice do NOT move with players during a substitution.
-        // If the captain was swapped, promote the vice captain to captain.
-        const captainInvolved = (captainPos === posA || captainPos === posB);
-        const viceInvolved = (vicePos === posA || vicePos === posB);
-
-        if (captainInvolved) {
-            if (vicePos && !isBenchPos(vicePos)) {
-                captainPos = vicePos;
-            } else {
-                captainPos = null;
-            }
-            vicePos = null;
-        } else if (viceInvolved) {
-            vicePos = null;
+        // If the captain was involved in the substitution, the player who
+        // takes their place on the pitch becomes the new captain.
+        if (captainPos === posA || captainPos === posB) {
+            captainPos = posB;
         }
 
         [posA, posB].forEach(pos => {
@@ -540,21 +560,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateBudget();
         updateTransfersBudget();
-        updateSaveBtn();
+        markDirty();
         renderPickSummary();
         renderTransferList();
         renderTransferSquad();
         showToast('Substitution made!', 'success');
     }
 
-    // ===== SET CAPTAIN / VICE =====
+    // ===== SET CAPTAIN =====
     function setCaptain(pos) {
-        // Can't be both captain and vice
-        if (vicePos === pos) {
-            vicePos = null;
-            const vs = getSlot(pos);
-            if (vs) removeBadge(vs, 'badge-v');
-        }
         // Remove captain from another player
         if (captainPos && captainPos !== pos) {
             const os = getSlot(captainPos);
@@ -564,26 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
         captainPos = pos;
         const slot = getSlot(pos);
         if (slot) addBadge(slot, 'C', 'badge-c');
-        renderPickSummary();
-        renderTransferSquad();
-    }
-
-    function setVice(pos) {
-        // Can't be both captain and vice
-        if (captainPos === pos) {
-            captainPos = null;
-            const cs = getSlot(pos);
-            if (cs) removeBadge(cs, 'badge-c');
-        }
-        // Remove vice from another player
-        if (vicePos && vicePos !== pos) {
-            const os = getSlot(vicePos);
-            if (os) removeBadge(os, 'badge-v');
-        }
-
-        vicePos = pos;
-        const slot = getSlot(pos);
-        if (slot) addBadge(slot, 'V', 'badge-v');
+        markDirty();
         renderPickSummary();
         renderTransferSquad();
     }
@@ -597,7 +592,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             swapSlotPos = slot.dataset.position;
+            showPitchAction(slot.dataset.position, slot);
         });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (pitchActionPos && !e.target.closest('.pitch-action') && !e.target.closest('.player-slot')) {
+            removePitchAction();
+        }
     });
 
     // ===== SAVE TEAM =====
@@ -626,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
             players: {},
             totalSpent,
             captain: captainPos,
-            vice: vicePos,
         };
         Object.keys(selectedPlayers).forEach(pos => {
             savedData.players[pos] = { name: selectedPlayers[pos].name, price: selectedPlayers[pos].price, src: selectedPlayers[pos].src };
@@ -642,6 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== AUTO PICK TEAM =====
     function clearSquadDisplay() {
+        removePitchAction();
         getAllSlots().forEach(slot => {
             const nameEl = slot.querySelector('.player-name');
             nameEl.textContent = 'Pick a Player';
@@ -652,7 +654,6 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedPlayers = {};
         totalSpent = 0;
         captainPos = null;
-        vicePos = null;
         isSaved = false;
     }
 
@@ -728,17 +729,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 4) Auto captain = most expensive, vice = second most expensive
+        // 4) Auto captain = most expensive player
         const ranked = Object.keys(picks).sort((a, b) => picks[b].price - picks[a].price);
         if (ranked.length) {
             captainPos = ranked[0];
             const cSlot = getSlot(ranked[0]);
             if (cSlot) addBadge(cSlot, 'C', 'badge-c');
-        }
-        if (ranked.length > 1) {
-            vicePos = ranked[1];
-            const vSlot = getSlot(ranked[1]);
-            if (vSlot) addBadge(vSlot, 'V', 'badge-v');
         }
 
         updateBudget();
@@ -826,7 +822,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (player) {
                 hasAny = true;
                 const isCap = captainPos === pos;
-                const isVC = vicePos === pos;
                 div = document.createElement('div');
                 div.className = 'panel-selected-player bench';
                 div.innerHTML = `
@@ -836,13 +831,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="transfer-player-right">
                         <button class="panel-cv-btn btn-c ${isCap ? 'active' : ''}" title="Make Captain">C</button>
-                        <button class="panel-cv-btn btn-v ${isVC ? 'active' : ''}" title="Make Vice Captain">V</button>
                         <span class="transfer-player-price">$${player.price}M</span>
                         <button class="transfer-player-action out" title="Remove from squad">&times;</button>
                     </div>
                 `;
                 div.querySelector('.panel-cv-btn.btn-c').addEventListener('click', (e) => { e.stopPropagation(); setCaptain(pos); });
-                div.querySelector('.panel-cv-btn.btn-v').addEventListener('click', (e) => { e.stopPropagation(); setVice(pos); });
                 div.querySelector('.transfer-player-action').addEventListener('click', (e) => { e.stopPropagation(); removePlayer(pos); });
                 div.addEventListener('click', (e) => {
                     if (!e.target.closest('.panel-cv-btn') && !e.target.closest('.transfer-player-action')) showSubOption(pos, div);

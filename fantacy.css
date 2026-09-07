@@ -888,6 +888,46 @@ ul {
     opacity: 0.7;
 }
 
+.pitch-action {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(13, 0, 26, 0.95);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 10px;
+    padding: 6px 12px;
+    white-space: nowrap;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.pitch-action-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.pitch-cap-btn {
+    font-size: 0.68rem !important;
+    padding: 5px 12px !important;
+    letter-spacing: 1px;
+    background: rgba(232, 68, 58, 0.15) !important;
+    color: #e8443a !important;
+    border-color: rgba(232, 68, 58, 0.5) !important;
+}
+
+.pitch-cap-btn.on {
+    background: #e8443a !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(232, 68, 58, 0.4);
+}
+
 .panel-selected-player-left {
     display: flex;
     align-items: center;
@@ -928,18 +968,6 @@ ul {
     background: #e8443a;
     color: #fff;
     box-shadow: 0 0 12px rgba(232, 68, 58, 0.4);
-}
-
-.panel-cv-btn.btn-v {
-    border-color: rgba(0, 212, 232, 0.5);
-    color: #00d4e8;
-}
-
-.panel-cv-btn.btn-v:hover,
-.panel-cv-btn.btn-v.active {
-    background: #00d4e8;
-    color: #0d001a;
-    box-shadow: 0 0 12px rgba(0, 212, 232, 0.4);
 }
 
 .panel-selected-pos {
@@ -1054,7 +1082,7 @@ ul {
     box-shadow: 0 8px 30px rgba(0, 188, 212, 0.3);
 }
 
-/* ===== CAPTAIN / VICE BADGE ON JERSEY ===== */
+/* ===== CAPTAIN BADGE ON JERSEY ===== */
 .jersey-badge {
     position: absolute;
     top: -6px;
@@ -1081,11 +1109,6 @@ ul {
 
 .jersey-badge.badge-c {
     background: #e8443a;
-}
-
-.jersey-badge.badge-v {
-    background: #00d4e8;
-    color: #0d001a;
 }
 
 /* ===== PLAYER PICKER (Legacy - now using panel) ===== */
