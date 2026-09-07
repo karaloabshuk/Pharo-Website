@@ -180,33 +180,17 @@
                 </div>
             </div>
 
-            <!-- RIGHT: Squad Summary -->
+            <!-- RIGHT: Bench -->
             <div class="pitch-right">
                 <div class="pick-summary-header">
-                    <span class="picker-title">Your Squad</span>
+                    <span class="picker-title">Your Bench</span>
                     <span class="pick-budget" id="budget-left">$50M</span>
                 </div>
-                <div class="pick-summary-list" id="pick-summary-list">
-                    <p class="panel-empty-msg">No players selected yet</p>
-                </div>
-                <div class="panel-selected">
-                    <div class="pick-captaincy">
-                        <h4 class="pick-captaincy-title">Captain &amp; Vice Captain</h4>
-                        <div class="pick-captaincy-box">
-                            <div class="cap-box">
-                                <span class="cap-label">C</span>
-                                <span class="cap-name" id="pick-cap-name">Not set</span>
-                            </div>
-                            <div class="cap-box">
-                                <span class="cap-label v">V</span>
-                                <span class="cap-name" id="pick-vice-name">Not set</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel-footer">
-                        <button class="btn btn-secondary manage-btn" id="manage-transfers-btn">Manage Transfers</button>
-                        <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
-                    </div>
+                <div class="pick-summary-list" id="pick-summary-list"></div>
+                <div class="budget-breakdown pick-bb">
+                    <div class="bb-row"><span>Starting XI</span><span id="pb-starter">$0M</span></div>
+                    <div class="bb-row"><span>Bench</span><span id="pb-bench">$0M</span></div>
+                    <div class="bb-row bb-remaining"><span>Remaining for bench</span><span id="pb-remaining">$50M</span></div>
                 </div>
             </div>
         </div>
@@ -230,13 +214,19 @@
                         <button class="transfer-filter" data-filter="MID">MID</button>
                         <button class="transfer-filter" data-filter="FWD">FWD</button>
                     </div>
+                    <button class="btn btn-secondary auto-pick-btn" id="auto-pick-btn">Auto Pick Team</button>
                 </div>
                 <div class="transfer-list" id="transfer-list"></div>
             </div>
             <div class="transfer-squad">
-                <h3 class="transfer-squad-title">Your Squad</h3>
+                <h3 class="transfer-squad-title">Your Bench</h3>
                 <div class="transfer-squad-list" id="transfer-squad-list">
                     <p class="panel-empty-msg">No players in squad yet</p>
+                </div>
+                <div class="budget-breakdown">
+                    <div class="bb-row"><span>Starting XI</span><span id="bb-starter">$0M</span></div>
+                    <div class="bb-row"><span>Bench</span><span id="bb-bench">$0M</span></div>
+                    <div class="bb-row bb-remaining"><span>Remaining for bench</span><span id="bb-remaining">$50M</span></div>
                 </div>
                 <div class="transfer-squad-total">
                     <span>Team Value</span>
