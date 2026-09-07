@@ -960,8 +960,10 @@ document.addEventListener('DOMContentLoaded', () => {
         themeBtn.addEventListener('click', () => {
             themeIndex = (themeIndex + 1) % themes.length;
             const theme = themes[themeIndex];
+            const heroSection = document.querySelector('.Second');
             document.body.style.background = theme.bg;
             document.body.style.backgroundAttachment = 'fixed';
+            if (heroSection) heroSection.style.background = theme.bg;
             themeBtn.title = `Background: ${theme.name}`;
         });
     }
