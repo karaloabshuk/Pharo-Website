@@ -1137,6 +1137,94 @@ ul {
     margin-bottom: 2rem;
 }
 
+/* ===== INFO PAGES (About / Community / Events / Media) ===== */
+html {
+    scroll-behavior: smooth;
+}
+
+.info-section {
+    scroll-margin-top: 90px;
+    padding: 5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.info-section.alt {
+    border-top: 1px solid rgba(100, 60, 180, 0.15);
+    border-bottom: 1px solid rgba(100, 60, 180, 0.15);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.06), rgba(0, 212, 232, 0.04));
+}
+
+.info-section .section-title {
+    margin-bottom: 1rem;
+}
+
+.info-intro {
+    color: #9a8ab8;
+    font-size: 1.15rem;
+    max-width: 760px;
+    margin: 0 auto 3rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    text-align: left;
+}
+
+.info-section.alt .info-grid {
+    text-align: center;
+}
+
+.info-card {
+    background: linear-gradient(180deg, #15002c 0%, #0f0020 100%);
+    border: 1px solid rgba(100, 60, 180, 0.25);
+    border-radius: 14px;
+    padding: 1.8rem 1.5rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(168, 85, 247, 0.6);
+    box-shadow: 0 10px 40px rgba(168, 85, 247, 0.15);
+}
+
+.info-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: #00d4e8;
+}
+
+.info-section.alt .info-icon {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.info-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #e8e0f8;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.5px;
+}
+
+.info-card p {
+    color: #9a8ab8;
+    font-size: 0.98rem;
+}
+
 /* ===== FOOTER ===== */
 .site-footer {
     padding: 3rem 2rem;
