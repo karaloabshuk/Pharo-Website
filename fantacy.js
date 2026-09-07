@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let captainSlot = null;
     let viceSlot = null;
     let isSaved = false;
-    let activeTab = 'GKP';
+    let swapSlotPos = null;
 
     // Group -> slot positions on the pitch
     const groupAllocations = {
@@ -93,8 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('open-pitch');
     const closeBtn = document.getElementById('pitch-close');
     const budgetDisplay = document.getElementById('budget-left');
-    const panelList = document.getElementById('panel-list');
-    const panelSelectedList = document.getElementById('panel-selected-list');
+    const pickSummaryList = document.getElementById('pick-summary-list');
+    const pickCapName = document.getElementById('pick-cap-name');
+    const pickViceName = document.getElementById('pick-vice-name');
+    const manageTransfersBtn = document.getElementById('manage-transfers-btn');
     const saveBtn = document.getElementById('save-team-btn');
 
     const pickView = document.getElementById('pick-view');
@@ -203,8 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBudget();
         updateTransfersBudget();
         updateSaveBtn();
-        renderPanelList();
-        renderSelectedPanel();
+        renderPickSummary();
         renderTransferList();
         renderTransferSquad();
     }
@@ -212,6 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal() {
         pitchModal.classList.add('open');
         document.body.style.overflow = 'hidden';
+        updateBudget();
+        updateTransfersBudget();
+        renderPickSummary();
+        updateSaveBtn();
     }
 
     function closeModal() {
@@ -227,49 +232,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape' && pitchModal.classList.contains('open')) closeModal();
     });
 
-    // ===== TABS =====
-    document.querySelectorAll('.panel-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            activeTab = tab.dataset.tab;
-            renderPanelList();
-        });
-    });
-
-    // ===== RENDER PANEL LIST (all players of this group) =====
-    function renderPanelList() {
-        const sources = groupSources[activeTab];
-        const used = getUsedPlayers();
-        panelList.innerHTML = '';
-
-        sources.forEach(srcPos => {
-            const players = playerDB[srcPos];
-            players.forEach(player => {
-                const isTaken = used.includes(player.name);
-                const item = document.createElement('div');
-                item.className = 'panel-player' + (isTaken ? ' unavailable' : '');
-                const short = srcPos.replace(/[0-9]/g, '');
-
-                item.innerHTML = `
-                    <div class="panel-player-left">
-                        <div class="panel-player-avatar ${avClass[srcPos]}">${short}</div>
-                        <div class="panel-player-info">
-                            <span class="panel-player-name">${player.name}</span>
-                            <span class="panel-player-pos">${activeTab}</span>
-                        </div>
+    // ===== RENDER PICK SUMMARY (Pick Team right panel) =====
+    function renderPickSummary() {
+        const keys = Object.keys(selectedPlayers);
+        if (!pickSummaryList) return;
+        if (keys.length === 0) {
+            pickSummaryList.innerHTML = '<p class="panel-empty-msg">No players selected yet</p>';
+        } else {
+            pickSummaryList.innerHTML = '';
+            keys.forEach(pos => {
+                const player = selectedPlayers[pos];
+                const label = posGroupLabel(pos);
+                const div = document.createElement('div');
+                div.className = 'panel-selected-player';
+                div.innerHTML = `
+                    <div class="panel-selected-player-left">
+                        <span class="panel-selected-pos">${label}</span>
+                        <span class="panel-selected-name">${player.name}</span>
                     </div>
-                    <div class="panel-player-right">
-                        <span class="panel-player-price">$${player.price}M</span>
-                    </div>
+                    <span class="transfer-player-price">$${player.price}M</span>
                 `;
-
-                if (!isTaken) {
-                    item.addEventListener('click', () => selectPlayer(player, srcPos));
-                }
-                panelList.appendChild(item);
+                pickSummaryList.appendChild(div);
             });
-        });
+        }
+
+        // Captain / vice display
+        if (pickCapName) {
+            pickCapName.textContent = captainSlot && selectedPlayers[captainSlot.dataset.position]
+                ? selectedPlayers[captainSlot.dataset.position].name : 'Not set';
+        }
+        if (pickViceName) {
+            pickViceName.textContent = viceSlot && selectedPlayers[viceSlot.dataset.position]
+                ? selectedPlayers[viceSlot.dataset.position].name : 'Not set';
+        }
     }
 
     // Map a DB source position (GK, LB, CM1...) to its group
@@ -286,20 +281,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function addToSquad(player, srcPos) {
         const group = groupForSource(srcPos);
         const slots = groupAllocations[group];
-        // Find the first empty slot
+
         let targetPos = null;
-        for (const pos of slots) {
-            if (!selectedPlayers[pos]) {
-                targetPos = pos;
-                break;
+
+        // If a specific slot is selected for swapping, use it (swap mode)
+        if (swapSlotPos) {
+            const existing = selectedPlayers[swapSlotPos];
+            // Use it if it holds a same-group player (swap) or is empty (direct fill)
+            if ((existing && groupForSource(existing.src) === group) || !existing) {
+                targetPos = swapSlotPos;
+            }
+            swapSlotPos = null;
+        }
+
+        // Otherwise fill the first empty slot in the group
+        if (!targetPos) {
+            for (const pos of slots) {
+                if (!selectedPlayers[pos]) {
+                    targetPos = pos;
+                    break;
+                }
             }
         }
         if (!targetPos) {
-            showToast(`${group} slots are full!`, 'error');
+            showToast(`${group} slots are full! Remove a player to make space.`, 'error');
             return;
         }
 
         const slot = getSlot(targetPos);
+
+        // Refund the old player if swapping
+        if (selectedPlayers[targetPos]) {
+            totalSpent -= selectedPlayers[targetPos].price;
+        }
+
         selectedPlayers[targetPos] = { ...player, src: srcPos };
         totalSpent += player.price;
 
@@ -314,15 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateBudget();
         updateTransfersBudget();
-        renderPanelList();
-        renderSelectedPanel();
+        renderPickSummary();
         renderTransferList();
         renderTransferSquad();
-    }
-
-    // ===== SELECT PLAYER (from right panel) =====
-    function selectPlayer(player, srcPos) {
-        addToSquad(player, srcPos);
     }
 
     // ===== REMOVE PLAYER =====
@@ -351,8 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateBudget();
         updateTransfersBudget();
-        renderPanelList();
-        renderSelectedPanel();
+        renderPickSummary();
         renderTransferList();
         renderTransferSquad();
     }
@@ -374,7 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         captainSlot = slot;
         addBadge(slot, 'C', 'badge-c');
-        renderSelectedPanel();
+        renderPickSummary();
+        renderTransferSquad();
     }
 
     function setVice(pos) {
@@ -393,62 +402,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         viceSlot = slot;
         addBadge(slot, 'V', 'badge-v');
-        renderSelectedPanel();
+        renderPickSummary();
+        renderTransferSquad();
     }
 
-    // ===== RENDER SELECTED PANEL =====
-    function renderSelectedPanel() {
-        const keys = Object.keys(selectedPlayers);
-        if (keys.length === 0) {
-            panelSelectedList.innerHTML = '<p class="panel-empty-msg">No players selected yet</p>';
-            return;
-        }
-        panelSelectedList.innerHTML = '';
-        keys.forEach(pos => {
-            const player = selectedPlayers[pos];
-            const label = posGroupLabel(pos);
-            const isCap = captainSlot && captainSlot.dataset.position === pos;
-            const isVC = viceSlot && viceSlot.dataset.position === pos;
-            const div = document.createElement('div');
-            div.className = 'panel-selected-player';
-            div.innerHTML = `
-                <div class="panel-selected-player-left">
-                    <span class="panel-selected-pos">${label}</span>
-                    <span class="panel-selected-name">${player.name}</span>
-                </div>
-                <div class="panel-selected-actions">
-                    <button class="panel-cv-btn btn-c ${isCap ? 'active' : ''}" title="Make Captain">C</button>
-                    <button class="panel-cv-btn btn-v ${isVC ? 'active' : ''}" title="Make Vice Captain">V</button>
-                    <button class="panel-selected-remove" title="Remove">&times;</button>
-                </div>
-            `;
-            div.querySelector('.btn-c').addEventListener('click', (e) => {
-                e.stopPropagation();
-                setCaptain(pos);
-            });
-            div.querySelector('.btn-v').addEventListener('click', (e) => {
-                e.stopPropagation();
-                setVice(pos);
-            });
-            div.querySelector('.panel-selected-remove').addEventListener('click', (e) => {
-                e.stopPropagation();
-                removePlayer(pos);
-            });
-            panelSelectedList.appendChild(div);
-        });
-    }
-
-    // ===== CLICK ON PITCH SLOTS -> switch to that group tab =====
+    // ===== CLICK ON PITCH SLOT -> set swap slot (go to transfers for action) =====
     getAllSlots().forEach(slot => {
         slot.addEventListener('click', () => {
-            const group = posGroupLabel(slot.dataset.position);
-            const tabKey = Object.keys(groupAllocations).find(k => k === group);
-            if (tabKey) {
-                document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-                document.querySelector(`.panel-tab[data-tab="${tabKey}"]`).classList.add('active');
-                activeTab = tabKey;
-                renderPanelList();
-            }
+            swapSlotPos = slot.dataset.position;
         });
     });
 
@@ -462,6 +423,18 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Over budget! Remove some players.', 'error');
             return;
         }
+
+        // Check for empty position groups
+        const missing = [];
+        Object.keys(groupAllocations).forEach(group => {
+            const filled = groupAllocations[group].some(pos => selectedPlayers[pos]);
+            if (!filled) missing.push(group);
+        });
+        if (missing.length > 0) {
+            showToast(`You have to select ${missing.join(', ')}`, 'error');
+            return;
+        }
+
         const savedData = {
             players: {},
             totalSpent,
@@ -555,6 +528,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const inName = player.name;
             const inPrice = `$${player.price}M`;
             const label = posGroupLabel(pos);
+            const isCap = captainSlot && captainSlot.dataset.position === pos;
+            const isVC = viceSlot && viceSlot.dataset.position === pos;
             const div = document.createElement('div');
             div.className = 'panel-selected-player';
             div.innerHTML = `
@@ -563,10 +538,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="panel-selected-name">${inName}</span>
                 </div>
                 <div class="transfer-player-right">
+                    <button class="panel-cv-btn btn-c ${isCap ? 'active' : ''}" title="Make Captain">C</button>
+                    <button class="panel-cv-btn btn-v ${isVC ? 'active' : ''}" title="Make Vice Captain">V</button>
                     <span class="transfer-player-price">${inPrice}</span>
-                    <button class="transfer-player-action out">&times;</button>
+                    <button class="transfer-player-action out" title="Remove from squad">&times;</button>
                 </div>
             `;
+            div.querySelector('.panel-cv-btn.btn-c').addEventListener('click', () => setCaptain(pos));
+            div.querySelector('.panel-cv-btn.btn-v').addEventListener('click', () => setVice(pos));
             div.querySelector('.transfer-player-action').addEventListener('click', () => removePlayer(pos));
             transferSquadList.appendChild(div);
         });
@@ -584,23 +563,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===== MODAL NAV (Pick / Transfers) =====
+    function switchView(view) {
+        document.querySelectorAll('.modal-nav-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`.modal-nav-btn[data-view="${view}"]`);
+        if (btn) btn.classList.add('active');
+        if (view === 'pick') {
+            pickView.classList.remove('hidden');
+            transferView.classList.remove('visible');
+            renderPickSummary();
+        } else {
+            pickView.classList.add('hidden');
+            transferView.classList.add('visible');
+            renderTransferList();
+            renderTransferSquad();
+            updateTransfersBudget();
+        }
+    }
+
     document.querySelectorAll('.modal-nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.modal-nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const view = btn.dataset.view;
-            if (view === 'pick') {
-                pickView.classList.remove('hidden');
-                transferView.classList.remove('visible');
-            } else {
-                pickView.classList.add('hidden');
-                transferView.classList.add('visible');
-                renderTransferList();
-                renderTransferSquad();
-                updateTransfersBudget();
-            }
-        });
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
     });
+
+    if (manageTransfersBtn) manageTransfersBtn.addEventListener('click', () => switchView('transfers'));
 
     // ===== LOAD SAVED TEAM =====
     function loadSavedTeam() {
@@ -650,8 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBudget();
             updateTransfersBudget();
             updateSaveBtn();
-            renderPanelList();
-            renderSelectedPanel();
+            renderPickSummary();
             renderTransferList();
             renderTransferSquad();
         } catch (e) {

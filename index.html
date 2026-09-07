@@ -180,21 +180,31 @@
                 </div>
             </div>
 
-            <!-- RIGHT: Player Panel -->
+            <!-- RIGHT: Squad Summary -->
             <div class="pitch-right">
-                <div class="panel-tabs">
-                    <button class="panel-tab active" data-tab="GKP">GKP</button>
-                    <button class="panel-tab" data-tab="DEF">DEF</button>
-                    <button class="panel-tab" data-tab="MID">MID</button>
-                    <button class="panel-tab" data-tab="FWD">FWD</button>
+                <div class="pick-summary-header">
+                    <span class="picker-title">Your Squad</span>
+                    <span class="pick-budget" id="budget-left">$50M</span>
                 </div>
-                <div class="panel-list" id="panel-list"></div>
+                <div class="pick-summary-list" id="pick-summary-list">
+                    <p class="panel-empty-msg">No players selected yet</p>
+                </div>
                 <div class="panel-selected">
-                    <h3 class="panel-selected-title">Selected Players</h3>
-                    <div class="panel-selected-list" id="panel-selected-list">
-                        <p class="panel-empty-msg">No players selected yet</p>
+                    <div class="pick-captaincy">
+                        <h4 class="pick-captaincy-title">Captain &amp; Vice Captain</h4>
+                        <div class="pick-captaincy-box">
+                            <div class="cap-box">
+                                <span class="cap-label">C</span>
+                                <span class="cap-name" id="pick-cap-name">Not set</span>
+                            </div>
+                            <div class="cap-box">
+                                <span class="cap-label v">V</span>
+                                <span class="cap-name" id="pick-vice-name">Not set</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="panel-footer">
+                        <button class="btn btn-secondary manage-btn" id="manage-transfers-btn">Manage Transfers</button>
                         <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
                     </div>
                 </div>
