@@ -947,6 +947,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ===== BRIGHTNESS =====
+    const brightnessBtn = document.getElementById('brightness-toggle');
+    const brightnessLevels = [1, 1.15, 1.35, 1.6];
+    let brightnessIndex = 0;
+    if (brightnessBtn) {
+        brightnessBtn.addEventListener('click', () => {
+            brightnessIndex = (brightnessIndex + 1) % brightnessLevels.length;
+            const level = brightnessLevels[brightnessIndex];
+            document.body.style.filter = `brightness(${level})`;
+            brightnessBtn.title = `Brightness: ${Math.round(level * 100)}%`;
+        });
+    }
+
     // ===== PLAYER ENTRANCE ANIMATION =====
     if (pitchModal) {
         const observer = new MutationObserver(() => {
