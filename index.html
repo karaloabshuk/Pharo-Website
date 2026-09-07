@@ -75,114 +75,126 @@
     <!-- PITCH MODAL (Full Page) -->
     <div class="pitch-modal" id="pitch-modal">
         <button class="pitch-close" id="pitch-close">&times;</button>
-        <div class="pitch-modal-topbar">
-            <h2 class="section-title">Your Squad &mdash; 1-4-3-3</h2>
-            <div class="topbar-right">
-                <div class="budget-bar">
-                    <span class="budget-label">Budget:</span>
-                    <span class="budget-amount" id="budget-left">$70M</span>
+        <div class="pitch-layout">
+            <!-- LEFT: Pitch -->
+            <div class="pitch-left">
+                <div class="pitch-topbar">
+                    <h2 class="section-title">Pick Team</h2>
+                    <div class="budget-bar">
+                        <span class="budget-label">Budget</span>
+                        <span class="budget-amount" id="budget-left">$50M</span>
+                    </div>
                 </div>
-                <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
+                <div class="pitch-wrapper">
+                    <div class="pitch" id="pitch">
+                        <div class="pitch-lines">
+                            <div class="center-circle"></div>
+                            <div class="center-dot"></div>
+                            <div class="halfway-line"></div>
+                            <div class="penalty-box-top"></div>
+                            <div class="penalty-box-bottom"></div>
+                            <div class="goal-box-top"></div>
+                            <div class="goal-box-bottom"></div>
+                            <div class="penalty-dot-top"></div>
+                            <div class="penalty-dot-bottom"></div>
+                            <div class="penalty-arc-top"></div>
+                            <div class="penalty-arc-bottom"></div>
+                        </div>
+
+                        <!-- ATTACKERS -->
+                        <div class="player-row forwards-row">
+                            <div class="player-slot" data-position="FWD1">
+                                <div class="player-jersey jersey-forward"><span class="jersey-label">ATT</span></div>
+                                <span class="player-pos">ATT</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="FWD2">
+                                <div class="player-jersey jersey-forward"><span class="jersey-label">ATT</span></div>
+                                <span class="player-pos">ATT</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="FWD3">
+                                <div class="player-jersey jersey-forward"><span class="jersey-label">ATT</span></div>
+                                <span class="player-pos">ATT</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                        </div>
+
+                        <!-- MIDFIELDERS -->
+                        <div class="player-row midfield-row">
+                            <div class="player-slot" data-position="MID1">
+                                <div class="player-jersey jersey-midfield"><span class="jersey-label">MID</span></div>
+                                <span class="player-pos">MID</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="MID2">
+                                <div class="player-jersey jersey-midfield"><span class="jersey-label">MID</span></div>
+                                <span class="player-pos">MID</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="MID3">
+                                <div class="player-jersey jersey-midfield"><span class="jersey-label">MID</span></div>
+                                <span class="player-pos">MID</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                        </div>
+
+                        <!-- DEFENDERS -->
+                        <div class="player-row defense-row">
+                            <div class="player-slot" data-position="DEF1">
+                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
+                                <span class="player-pos">DEF</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="DEF2">
+                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
+                                <span class="player-pos">DEF</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="DEF3">
+                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
+                                <span class="player-pos">DEF</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                            <div class="player-slot" data-position="DEF4">
+                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
+                                <span class="player-pos">DEF</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                        </div>
+
+                        <!-- GOALKEEPER -->
+                        <div class="player-row keeper-row">
+                            <div class="player-slot" data-position="GKP1">
+                                <div class="player-jersey jersey-keeper"><span class="jersey-label">GK</span></div>
+                                <span class="player-pos">GK</span>
+                                <span class="player-name">Pick a Player</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Player Panel -->
+            <div class="pitch-right">
+                <div class="panel-tabs">
+                    <button class="panel-tab active" data-tab="GKP">GKP</button>
+                    <button class="panel-tab" data-tab="DEF">DEF</button>
+                    <button class="panel-tab" data-tab="MID">MID</button>
+                    <button class="panel-tab" data-tab="FWD">FWD</button>
+                </div>
+                <div class="panel-list" id="panel-list"></div>
+                <div class="panel-selected">
+                    <h3 class="panel-selected-title">Selected Players</h3>
+                    <div class="panel-selected-list" id="panel-selected-list">
+                        <p class="panel-empty-msg">No players selected yet</p>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="pitch-wrapper">
-            <div class="pitch" id="pitch">
-                <div class="pitch-formation-label">1 - 4 - 3 - 3</div>
-                <div class="pitch-lines">
-                    <div class="center-circle"></div>
-                    <div class="center-dot"></div>
-                    <div class="halfway-line"></div>
-                    <div class="penalty-box-top"></div>
-                    <div class="penalty-box-bottom"></div>
-                    <div class="goal-box-top"></div>
-                    <div class="goal-box-bottom"></div>
-                    <div class="penalty-dot-top"></div>
-                    <div class="penalty-dot-bottom"></div>
-                    <div class="penalty-arc-top"></div>
-                    <div class="penalty-arc-bottom"></div>
-                </div>
-
-                <!-- ATTACKERS -->
-                <div class="player-row forwards-row">
-                    <div class="player-slot" data-position="LW">
-                        <div class="player-jersey jersey-forward"><span class="jersey-number">11</span></div>
-                        <span class="player-pos">LW</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="ST">
-                        <div class="player-jersey jersey-forward"><span class="jersey-number">9</span></div>
-                        <span class="player-pos">ST</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="RW">
-                        <div class="player-jersey jersey-forward"><span class="jersey-number">7</span></div>
-                        <span class="player-pos">RW</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                </div>
-
-                <!-- MIDFIELDERS -->
-                <div class="player-row midfield-row">
-                    <div class="player-slot" data-position="CM1">
-                        <div class="player-jersey jersey-midfield"><span class="jersey-number">8</span></div>
-                        <span class="player-pos">CM</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="CM2">
-                        <div class="player-jersey jersey-midfield"><span class="jersey-number">6</span></div>
-                        <span class="player-pos">CM</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="CM3">
-                        <div class="player-jersey jersey-midfield"><span class="jersey-number">10</span></div>
-                        <span class="player-pos">CM</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                </div>
-
-                <!-- DEFENDERS -->
-                <div class="player-row defense-row">
-                    <div class="player-slot" data-position="LB">
-                        <div class="player-jersey jersey-defense"><span class="jersey-number">3</span></div>
-                        <span class="player-pos">LB</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="CB1">
-                        <div class="player-jersey jersey-defense"><span class="jersey-number">4</span></div>
-                        <span class="player-pos">CB</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="CB2">
-                        <div class="player-jersey jersey-defense"><span class="jersey-number">5</span></div>
-                        <span class="player-pos">CB</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                    <div class="player-slot" data-position="RB">
-                        <div class="player-jersey jersey-defense"><span class="jersey-number">2</span></div>
-                        <span class="player-pos">RB</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                </div>
-
-                <!-- GOALKEEPER -->
-                <div class="player-row keeper-row">
-                    <div class="player-slot" data-position="GK">
-                        <div class="player-jersey jersey-keeper"><span class="jersey-number">1</span></div>
-                        <span class="player-pos">GK</span>
-                        <span class="player-name">Pick a Player</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PLAYER PICKER POPUP -->
-    <div class="picker-popup" id="picker-popup">
-        <div class="picker-header">
-            <span class="picker-title" id="picker-title">Choose Player</span>
-            <button class="picker-close-btn" id="picker-close">&times;</button>
-        </div>
-        <div class="picker-list" id="picker-list"></div>
     </div>
 
     <section class="cta-section">

@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ===== PLAYER DATABASE =====
     const playerDB = {
         GK: [
             { name: 'Robel', price: 5 },
@@ -59,14 +58,66 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
     };
 
-    const BUDGET = 70;
+    const BUDGET = 50;
     let selectedPlayers = {};
     let totalSpent = 0;
     let captainSlot = null;
     let viceSlot = null;
     let isSaved = false;
+    let activeTab = 'GKP';
 
-    // ===== TOAST =====
+    // Group -> slot positions on the pitch
+    const groupAllocations = {
+        GKP: ['GKP1'],
+        DEF: ['DEF1', 'DEF2', 'DEF3', 'DEF4'],
+        MID: ['MID1', 'MID2', 'MID3'],
+        FWD: ['FWD1', 'FWD2', 'FWD3'],
+    };
+
+    // Each group draws players from these DB positions (in order)
+    const groupSources = {
+        GKP: ['GK'],
+        DEF: ['LB', 'CB1', 'CB2', 'RB'],
+        MID: ['CM1', 'CM2', 'CM3'],
+        FWD: ['LW', 'ST', 'RW'],
+    };
+
+    const avClass = {
+        GK: 'av-gkp',
+        LB: 'av-def', CB1: 'av-def', CB2: 'av-def', RB: 'av-def',
+        CM1: 'av-mid', CM2: 'av-mid', CM3: 'av-mid',
+        LW: 'av-fwd', ST: 'av-fwd', RW: 'av-fwd',
+    };
+
+    const pitchModal = document.getElementById('pitch-modal');
+    const openBtn = document.getElementById('open-pitch');
+    const closeBtn = document.getElementById('pitch-close');
+    const budgetDisplay = document.getElementById('budget-left');
+    const panelList = document.getElementById('panel-list');
+    const panelSelectedList = document.getElementById('panel-selected-list');
+    const saveBtn = document.getElementById('save-team-btn');
+
+    function getAllSlots() {
+        return Array.from(document.querySelectorAll('.player-slot'));
+    }
+
+    function getSlot(pos) {
+        return getAllSlots().find(s => s.dataset.position === pos);
+    }
+
+    // Group label for a slot
+    function posGroupLabel(pos) {
+        if (pos.startsWith('GKP')) return 'GKP';
+        if (pos.startsWith('DEF')) return 'DEF';
+        if (pos.startsWith('MID')) return 'MID';
+        if (pos.startsWith('FWD')) return 'FWD';
+        return pos;
+    }
+
+    function getGroupByPos(pos) {
+        return Object.values(groupAllocations).find(arr => arr.includes(pos)) || [];
+    }
+
     function showToast(message, type) {
         let toast = document.querySelector('.save-toast');
         if (!toast) {
@@ -76,25 +127,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         toast.textContent = message;
         toast.className = `save-toast ${type}`;
-        requestAnimationFrame(() => {
-            toast.classList.add('show');
-        });
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2500);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // ===== RESET ALL SLOTS =====
+    function updateBudget() {
+        const remaining = BUDGET - totalSpent;
+        budgetDisplay.textContent = `$${remaining}M`;
+        budgetDisplay.style.color = remaining < 10 ? '#e8443a' : '#00d4e8';
+    }
+
+    function getUsedPlayers() {
+        return Object.values(selectedPlayers).map(p => p.name);
+    }
+
+    function updateSaveBtn() {
+        if (!saveBtn) return;
+        if (isSaved) {
+            saveBtn.textContent = 'Team Saved';
+            saveBtn.classList.add('saved');
+        } else {
+            saveBtn.textContent = 'Save Team';
+            saveBtn.classList.remove('saved');
+        }
+    }
+
+    function addBadge(slot, letter, badgeClass) {
+        const jersey = slot.querySelector('.player-jersey');
+        const existing = jersey.querySelector('.jersey-badge');
+        if (existing) existing.remove();
+        const badge = document.createElement('span');
+        badge.className = `jersey-badge ${badgeClass}`;
+        badge.textContent = letter;
+        jersey.appendChild(badge);
+    }
+
+    function removeBadge(slot, badgeClass) {
+        if (!slot) return;
+        const jersey = slot.querySelector('.player-jersey');
+        const badge = jersey.querySelector(`.${badgeClass}`);
+        if (badge) badge.remove();
+    }
+
     function resetAllSlots() {
-        document.querySelectorAll('.player-slot').forEach(slot => {
+        getAllSlots().forEach(slot => {
             const nameEl = slot.querySelector('.player-name');
             nameEl.textContent = 'Pick a Player';
             nameEl.style.color = '';
             nameEl.style.fontWeight = '';
-
             const jersey = slot.querySelector('.player-jersey');
-            const badges = jersey.querySelectorAll('.jersey-badge');
-            badges.forEach(b => b.remove());
+            jersey.querySelectorAll('.jersey-badge').forEach(b => b.remove());
         });
         selectedPlayers = {};
         totalSpent = 0;
@@ -103,10 +185,234 @@ document.addEventListener('DOMContentLoaded', () => {
         isSaved = false;
         updateBudget();
         updateSaveBtn();
+        renderPanelList();
+        renderSelectedPanel();
     }
 
+    function openModal() {
+        pitchModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        pitchModal.classList.remove('open');
+        document.body.style.overflow = '';
+        if (!isSaved) resetAllSlots();
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && pitchModal.classList.contains('open')) closeModal();
+    });
+
+    // ===== TABS =====
+    document.querySelectorAll('.panel-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeTab = tab.dataset.tab;
+            renderPanelList();
+        });
+    });
+
+    // ===== RENDER PANEL LIST (all players of this group) =====
+    function renderPanelList() {
+        const sources = groupSources[activeTab];
+        const used = getUsedPlayers();
+        panelList.innerHTML = '';
+
+        sources.forEach(srcPos => {
+            const players = playerDB[srcPos];
+            players.forEach(player => {
+                const isTaken = used.includes(player.name);
+                const item = document.createElement('div');
+                item.className = 'panel-player' + (isTaken ? ' unavailable' : '');
+                const short = srcPos.replace(/[0-9]/g, '');
+
+                item.innerHTML = `
+                    <div class="panel-player-left">
+                        <div class="panel-player-avatar ${avClass[srcPos]}">${short}</div>
+                        <div class="panel-player-info">
+                            <span class="panel-player-name">${player.name}</span>
+                            <span class="panel-player-pos">${activeTab}</span>
+                        </div>
+                    </div>
+                    <div class="panel-player-right">
+                        <span class="panel-player-price">$${player.price}M</span>
+                    </div>
+                `;
+
+                if (!isTaken) {
+                    item.addEventListener('click', () => selectPlayer(player));
+                }
+                panelList.appendChild(item);
+            });
+        });
+    }
+
+    // ===== SELECT PLAYER (fill first empty slot in group) =====
+    function selectPlayer(player) {
+        const group = activeTab;
+        const slots = groupAllocations[group];
+        // Find the first empty slot
+        let targetPos = null;
+        for (const pos of slots) {
+            if (!selectedPlayers[pos]) {
+                targetPos = pos;
+                break;
+            }
+        }
+        if (!targetPos) {
+            showToast(`${group} slots are full!`, 'error');
+            return;
+        }
+
+        const slot = getSlot(targetPos);
+        selectedPlayers[targetPos] = player;
+        totalSpent += player.price;
+
+        const nameEl = slot.querySelector('.player-name');
+        nameEl.textContent = player.name;
+        nameEl.style.color = '#fff';
+        nameEl.style.fontWeight = '700';
+
+        const jersey = slot.querySelector('.player-jersey');
+        jersey.style.boxShadow = '0 0 30px rgba(0, 212, 232, 0.6)';
+        setTimeout(() => { jersey.style.boxShadow = ''; }, 600);
+
+        updateBudget();
+        renderPanelList();
+        renderSelectedPanel();
+    }
+
+    // ===== REMOVE PLAYER =====
+    function removePlayer(pos) {
+        if (!selectedPlayers[pos]) return;
+
+        const slot = getSlot(pos);
+        if (slot) {
+            const nameEl = slot.querySelector('.player-name');
+            nameEl.textContent = 'Pick a Player';
+            nameEl.style.color = '';
+            nameEl.style.fontWeight = '';
+        }
+
+        if (captainSlot && captainSlot === slot) {
+            removeBadge(slot, 'badge-c');
+            captainSlot = null;
+        }
+        if (viceSlot && viceSlot === slot) {
+            removeBadge(slot, 'badge-v');
+            viceSlot = null;
+        }
+
+        totalSpent -= selectedPlayers[pos].price;
+        delete selectedPlayers[pos];
+
+        updateBudget();
+        renderPanelList();
+        renderSelectedPanel();
+    }
+
+    // ===== SET CAPTAIN / VICE =====
+    function setCaptain(pos) {
+        const slot = getSlot(pos);
+        if (!slot) return;
+
+        // Can't be both captain and vice
+        if (viceSlot && viceSlot === slot) {
+            removeBadge(slot, 'badge-v');
+            viceSlot = null;
+        }
+        // Remove captain from another player
+        if (captainSlot && captainSlot !== slot) {
+            removeBadge(captainSlot, 'badge-c');
+        }
+
+        captainSlot = slot;
+        addBadge(slot, 'C', 'badge-c');
+        renderSelectedPanel();
+    }
+
+    function setVice(pos) {
+        const slot = getSlot(pos);
+        if (!slot) return;
+
+        // Can't be both captain and vice
+        if (captainSlot && captainSlot === slot) {
+            removeBadge(slot, 'badge-c');
+            captainSlot = null;
+        }
+        // Remove vice from another player
+        if (viceSlot && viceSlot !== slot) {
+            removeBadge(viceSlot, 'badge-v');
+        }
+
+        viceSlot = slot;
+        addBadge(slot, 'V', 'badge-v');
+        renderSelectedPanel();
+    }
+
+    // ===== RENDER SELECTED PANEL =====
+    function renderSelectedPanel() {
+        const keys = Object.keys(selectedPlayers);
+        if (keys.length === 0) {
+            panelSelectedList.innerHTML = '<p class="panel-empty-msg">No players selected yet</p>';
+            return;
+        }
+        panelSelectedList.innerHTML = '';
+        keys.forEach(pos => {
+            const player = selectedPlayers[pos];
+            const label = posGroupLabel(pos);
+            const isCap = captainSlot && captainSlot.dataset.position === pos;
+            const isVC = viceSlot && viceSlot.dataset.position === pos;
+            const div = document.createElement('div');
+            div.className = 'panel-selected-player';
+            div.innerHTML = `
+                <div class="panel-selected-player-left">
+                    <span class="panel-selected-pos">${label}</span>
+                    <span class="panel-selected-name">${player.name}</span>
+                </div>
+                <div class="panel-selected-actions">
+                    <button class="panel-cv-btn btn-c ${isCap ? 'active' : ''}" title="Make Captain">C</button>
+                    <button class="panel-cv-btn btn-v ${isVC ? 'active' : ''}" title="Make Vice Captain">V</button>
+                    <button class="panel-selected-remove" title="Remove">&times;</button>
+                </div>
+            `;
+            div.querySelector('.btn-c').addEventListener('click', (e) => {
+                e.stopPropagation();
+                setCaptain(pos);
+            });
+            div.querySelector('.btn-v').addEventListener('click', (e) => {
+                e.stopPropagation();
+                setVice(pos);
+            });
+            div.querySelector('.panel-selected-remove').addEventListener('click', (e) => {
+                e.stopPropagation();
+                removePlayer(pos);
+            });
+            panelSelectedList.appendChild(div);
+        });
+    }
+
+    // ===== CLICK ON PITCH SLOTS -> switch to that group tab =====
+    getAllSlots().forEach(slot => {
+        slot.addEventListener('click', () => {
+            const group = posGroupLabel(slot.dataset.position);
+            const tabKey = Object.keys(groupAllocations).find(k => k === group);
+            if (tabKey) {
+                document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`.panel-tab[data-tab="${tabKey}"]`).classList.add('active');
+                activeTab = tabKey;
+                renderPanelList();
+            }
+        });
+    });
+
     // ===== SAVE TEAM =====
-    function saveTeam() {
+    if (saveBtn) saveBtn.addEventListener('click', () => {
         if (Object.keys(selectedPlayers).length === 0) {
             showToast('Pick at least one player first!', 'error');
             return;
@@ -115,101 +421,80 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Over budget! Remove some players.', 'error');
             return;
         }
-
-        // Build saved data
         const savedData = {
             players: {},
-            totalSpent: totalSpent,
+            totalSpent,
             captain: captainSlot ? captainSlot.dataset.position : null,
             vice: viceSlot ? viceSlot.dataset.position : null,
         };
-
         Object.keys(selectedPlayers).forEach(pos => {
-            savedData.players[pos] = { name: selectedPlayers[pos].name, price: selectedPlayers[pos].price };
+            savedData.players[pos] = { name: selectedPlayers[pos].name, price: selectedPlayers[pos].price, src: selectedPlayers[pos].src };
         });
-
         localStorage.setItem('pharo_saved_team', JSON.stringify(savedData));
         isSaved = true;
         updateSaveBtn();
         showToast('Team saved successfully!', 'success');
-    }
+    });
 
-    function updateSaveBtn() {
-        const btn = document.getElementById('save-team-btn');
-        if (!btn) return;
-        if (isSaved) {
-            btn.textContent = 'Team Saved';
-            btn.classList.add('saved');
-        } else {
-            btn.textContent = 'Save Team';
-            btn.classList.remove('saved');
-        }
-    }
-
-    // ===== LOAD SAVED TEAM ON PAGE LOAD =====
+    // ===== LOAD SAVED TEAM =====
     function loadSavedTeam() {
         const data = localStorage.getItem('pharo_saved_team');
         if (!data) return;
-
         try {
             const saved = JSON.parse(data);
-            const allSlots = document.querySelectorAll('.player-slot');
-
-            Object.keys(saved.players).forEach(pos => {
+            getAllSlots().forEach(slot => {
+                const pos = slot.dataset.position;
                 const savedPlayer = saved.players[pos];
-                // Find the matching slot
-                allSlots.forEach(slot => {
-                    if (slot.dataset.position === pos) {
-                        const players = playerDB[pos];
-                        const player = players.find(p => p.name === savedPlayer.name);
-                        if (player) {
-                            selectedPlayers[pos] = player;
-                            totalSpent += player.price;
-
-                            const nameEl = slot.querySelector('.player-name');
-                            nameEl.textContent = player.name;
-                            nameEl.style.color = '#fff';
-                            nameEl.style.fontWeight = '700';
-                        }
+                if (savedPlayer) {
+                    // Find player in DB by name (position order: from group sources)
+                    const group = posGroupLabel(pos);
+                    const sources = groupSources[group];
+                    let found = null;
+                    for (const src of sources) {
+                        const p = playerDB[src].find(x => x.name === savedPlayer.name);
+                        if (p) { found = { ...p, src }; break; }
                     }
-                });
+                    if (found) {
+                        selectedPlayers[pos] = found;
+                        if (found.price !== undefined) totalSpent += found.price;
+                        const nameEl = slot.querySelector('.player-name');
+                        nameEl.textContent = found.name;
+                        nameEl.style.color = '#fff';
+                        nameEl.style.fontWeight = '700';
+                    }
+                }
             });
 
-            // Restore captain
             if (saved.captain) {
-                allSlots.forEach(slot => {
-                    if (slot.dataset.position === saved.captain) {
-                        captainSlot = slot;
-                        addBadge(slot, 'C', 'badge-c');
-                    }
-                });
+                const cSlot = getSlot(saved.captain);
+                if (cSlot) {
+                    captainSlot = cSlot;
+                    addBadge(cSlot, 'C', 'badge-c');
+                }
             }
-
-            // Restore vice
             if (saved.vice) {
-                allSlots.forEach(slot => {
-                    if (slot.dataset.position === saved.vice) {
-                        viceSlot = slot;
-                        addBadge(slot, 'V', 'badge-v');
-                    }
-                });
+                const vSlot = getSlot(saved.vice);
+                if (vSlot) {
+                    viceSlot = vSlot;
+                    addBadge(vSlot, 'V', 'badge-v');
+                }
             }
 
             isSaved = true;
-    updateBudget();
-
-    // Load any previously saved team
-    loadSavedTeam();
+            updateBudget();
             updateSaveBtn();
+            renderPanelList();
+            renderSelectedPanel();
         } catch (e) {
             localStorage.removeItem('pharo_saved_team');
         }
     }
 
+    loadSavedTeam();
+
     // ===== STATS ANIMATION =====
     const stats = document.querySelectorAll('.stat-number');
     let statsAnimated = false;
-
     const animateStats = () => {
         stats.forEach(stat => {
             const target = parseInt(stat.textContent);
@@ -223,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 30);
         });
     };
-
     const statsObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && !statsAnimated) {
@@ -232,7 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, { threshold: 0.5 });
-
     const statsContainer = document.querySelector('.hero-stats');
     if (statsContainer) statsObserver.observe(statsContainer);
 
@@ -243,7 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.transform = 'translateY(30px)';
         card.style.transition = `all 0.6s ease ${i * 0.15}s`;
     });
-
     const cardObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -262,265 +544,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.classList.add('active');
         });
     });
-
-    // ===== PITCH MODAL =====
-    const pitchModal = document.getElementById('pitch-modal');
-    const openBtn = document.getElementById('open-pitch');
-    const closeBtn = document.getElementById('pitch-close');
-    const pickerPopup = document.getElementById('picker-popup');
-    const pickerTitle = document.getElementById('picker-title');
-    const pickerList = document.getElementById('picker-list');
-    const pickerCloseBtn = document.getElementById('picker-close');
-    const budgetDisplay = document.getElementById('budget-left');
-
-    function openModal() {
-        pitchModal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-        pitchModal.classList.remove('open');
-        document.body.style.overflow = '';
-        closePicker();
-
-        // If team was NOT saved, reset everything back to original
-        if (!isSaved) {
-            resetAllSlots();
-        }
-    }
-
-    if (openBtn) openBtn.addEventListener('click', openModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-    // Save button
-    const saveBtn = document.getElementById('save-team-btn');
-    if (saveBtn) saveBtn.addEventListener('click', saveTeam);
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (pickerPopup.classList.contains('visible')) {
-                closePicker();
-            } else {
-                closeModal();
-            }
-        }
-    });
-
-    // ===== PLAYER PICKER =====
-    function updateBudget() {
-        const remaining = BUDGET - totalSpent;
-        budgetDisplay.textContent = `$${remaining}M`;
-        if (remaining < 10) {
-            budgetDisplay.style.color = '#e8443a';
-        } else {
-            budgetDisplay.style.color = '#00d4e8';
-        }
-    }
-
-    function getUsedPlayers() {
-        return Object.values(selectedPlayers).map(p => p.name);
-    }
-
-    function openPicker(slot) {
-        const position = slot.dataset.position;
-        const players = playerDB[position];
-        const used = getUsedPlayers();
-        const posLabel = position.replace(/[0-9]/g, '');
-
-        pickerTitle.textContent = `Choose ${posLabel}`;
-        pickerList.innerHTML = '';
-
-        players.forEach(player => {
-            const isTaken = used.includes(player.name);
-
-            const item = document.createElement('div');
-            item.className = 'picker-item' + (isTaken ? ' unavailable' : '');
-
-            // Check if this player is already captain or vice
-            const isCaptain = captainSlot && captainSlot.dataset.position === position;
-            const isVice = viceSlot && viceSlot.dataset.position === position;
-
-            item.innerHTML = `
-                <div class="picker-item-info">
-                    <span class="picker-item-name">${player.name}</span>
-                    <span class="picker-item-role">${posLabel}</span>
-                </div>
-                <span class="picker-item-price">$${player.price}M</span>
-                <div class="picker-item-actions">
-                    <button class="picker-cv-btn btn-c ${isCaptain ? 'active' : ''}" data-role="captain" title="Make Captain">C</button>
-                    <button class="picker-cv-btn btn-v ${isVice ? 'active' : ''}" data-role="vice" title="Make Vice Captain">V</button>
-                </div>
-            `;
-
-            if (!isTaken) {
-                // Click row to select player
-                item.addEventListener('click', (e) => {
-                    if (e.target.closest('.picker-cv-btn')) return;
-                    selectPlayer(slot, player, position);
-                });
-
-                // Captain button
-                const cBtn = item.querySelector('.btn-c');
-                cBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    setCaptain(slot, player, position, cBtn);
-                });
-
-                // Vice button
-                const vBtn = item.querySelector('.btn-v');
-                vBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    setVice(slot, player, position, vBtn);
-                });
-            } else {
-                // Disable C/V for taken players
-                item.querySelectorAll('.picker-cv-btn').forEach(b => b.classList.add('disabled'));
-            }
-
-            pickerList.appendChild(item);
-        });
-
-        // Position the popup near the clicked slot
-        const slotRect = slot.getBoundingClientRect();
-        const pickerHeight = 360;
-        const topbarHeight = 70;
-        const gap = 10;
-
-        let top = slotRect.bottom + gap;
-        let left = slotRect.left + slotRect.width / 2 - 140;
-
-        // If not enough space below, open above
-        if (top + pickerHeight > window.innerHeight) {
-            top = slotRect.top - pickerHeight - gap;
-        }
-
-        // If above the topbar, clamp it
-        if (top < topbarHeight) {
-            top = topbarHeight + 5;
-        }
-
-        // Horizontal clamping
-        if (left < 10) left = 10;
-        if (left + 280 > window.innerWidth) left = window.innerWidth - 290;
-
-        pickerPopup.style.top = top + 'px';
-        pickerPopup.style.left = left + 'px';
-        pickerPopup.classList.add('visible');
-    }
-
-    function setCaptain(slot, player, position, btn) {
-        // Can't be both captain and vice
-        if (viceSlot && viceSlot === slot) {
-            removeBadge(viceSlot, 'badge-v');
-            viceSlot = null;
-        }
-
-        // If someone else is captain, remove their badge
-        if (captainSlot && captainSlot !== slot) {
-            removeBadge(captainSlot, 'badge-c');
-        }
-
-        captainSlot = slot;
-        addBadge(slot, 'C', 'badge-c');
-
-        // Update active state in picker
-        pickerList.querySelectorAll('.btn-c').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    function setVice(slot, player, position, btn) {
-        // Can't be both captain and vice
-        if (captainSlot && captainSlot === slot) {
-            removeBadge(captainSlot, 'badge-c');
-            captainSlot = null;
-        }
-
-        // If someone else is vice, remove their badge
-        if (viceSlot && viceSlot !== slot) {
-            removeBadge(viceSlot, 'badge-v');
-        }
-
-        viceSlot = slot;
-        addBadge(slot, 'V', 'badge-v');
-
-        // Update active state in picker
-        pickerList.querySelectorAll('.btn-v').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    function addBadge(slot, letter, badgeClass) {
-        const jersey = slot.querySelector('.player-jersey');
-        // Remove existing badge first
-        const existing = jersey.querySelector('.jersey-badge');
-        if (existing) existing.remove();
-
-        const badge = document.createElement('span');
-        badge.className = `jersey-badge ${badgeClass}`;
-        badge.textContent = letter;
-        jersey.appendChild(badge);
-    }
-
-    function removeBadge(slot, badgeClass) {
-        if (!slot) return;
-        const jersey = slot.querySelector('.player-jersey');
-        const badge = jersey.querySelector(`.${badgeClass}`);
-        if (badge) badge.remove();
-    }
-
-    function closePicker() {
-        pickerPopup.classList.remove('visible');
-    }
-
-    function selectPlayer(slot, player, position) {
-        // If this slot already had a player, refund
-        if (selectedPlayers[position]) {
-            totalSpent -= selectedPlayers[position].price;
-        }
-
-        selectedPlayers[position] = player;
-        totalSpent += player.price;
-
-        // Update the slot display
-        const nameEl = slot.querySelector('.player-name');
-        nameEl.textContent = player.name;
-        nameEl.style.color = '#fff';
-        nameEl.style.fontWeight = '700';
-
-        // Flash effect on jersey
-        const jersey = slot.querySelector('.player-jersey');
-        jersey.style.boxShadow = '0 0 30px rgba(0, 212, 232, 0.6)';
-        setTimeout(() => { jersey.style.boxShadow = ''; }, 600);
-
-        // Auto-assign captain if no captain yet
-        if (!captainSlot) {
-            captainSlot = slot;
-            addBadge(slot, 'C', 'badge-c');
-        }
-
-        updateBudget();
-        closePicker();
-    }
-
-    // Click on any player slot
-    document.querySelectorAll('.player-slot').forEach(slot => {
-        slot.addEventListener('click', () => {
-            openPicker(slot);
-        });
-    });
-
-    // Close picker
-    if (pickerCloseBtn) pickerCloseBtn.addEventListener('click', closePicker);
-
-    // Close picker when clicking outside
-    document.addEventListener('click', (e) => {
-        if (pickerPopup.classList.contains('visible') &&
-            !pickerPopup.contains(e.target) &&
-            !e.target.closest('.player-slot')) {
-            closePicker();
-        }
-    });
-
-    updateBudget();
 
     // ===== PLAYER ENTRANCE ANIMATION =====
     if (pitchModal) {

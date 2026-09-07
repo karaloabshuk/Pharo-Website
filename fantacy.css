@@ -362,35 +362,21 @@ ul {
     color: #00d4e8;
 }
 
-/* ===== PITCH MODAL (FULL PAGE) ===== */
+/* ===== PITCH MODAL (FPL STYLE) ===== */
 .pitch-modal {
     position: fixed;
     inset: 0;
     z-index: 1000;
     background: #0a0014;
     display: flex;
-    flex-direction: column;
     opacity: 0;
     visibility: hidden;
     transition: all 0.4s ease;
-    overflow-y: auto;
 }
 
 .pitch-modal.open {
     opacity: 1;
     visibility: visible;
-}
-
-.pitch-modal-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.2rem 2.5rem;
-    background: rgba(13, 0, 26, 0.9);
-    border-bottom: 1px solid rgba(100, 60, 180, 0.25);
-    flex-shrink: 0;
-    position: relative;
-    z-index: 10;
 }
 
 .pitch-close {
@@ -420,6 +406,34 @@ ul {
     transform: rotate(90deg);
 }
 
+.pitch-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.pitch-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #0a0014 0%, #0f0020 100%);
+    border-right: 1px solid rgba(100, 60, 180, 0.15);
+}
+
+.pitch-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(100, 60, 180, 0.15);
+    flex-shrink: 0;
+}
+
+.pitch-topbar .section-title {
+    font-size: 1.4rem;
+    margin-bottom: 0;
+}
+
 .budget-bar {
     display: flex;
     align-items: center;
@@ -430,15 +444,378 @@ ul {
     border-radius: 50px;
 }
 
-.topbar-right {
+.budget-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #7a6a9a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.budget-amount {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #00d4e8;
+}
+
+.pitch-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.pitch-modal.open .pitch-wrapper {
+    animation: pitchFadeIn 0.5s ease 0.2s both;
+}
+
+@keyframes pitchFadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.pitch-modal .player-name {
+    cursor: pointer;
+}
+
+.pitch-modal .player-slot {
+    position: relative;
+}
+
+/* ===== RIGHT PANEL (FPL Style) ===== */
+.pitch-right {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #0f0020 0%, #0a0014 100%);
+    flex-shrink: 0;
+}
+
+.panel-tabs {
+    display: flex;
+    border-bottom: 2px solid rgba(100, 60, 180, 0.2);
+    flex-shrink: 0;
+}
+
+.panel-tab {
+    flex: 1;
+    padding: 14px 0;
+    background: none;
+    border: none;
+    color: #7a6a9a;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.panel-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00d4e8, #a855f7);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.panel-tab:hover {
+    color: #b8b0cc;
+    background: rgba(100, 60, 180, 0.08);
+}
+
+.panel-tab.active {
+    color: #00d4e8;
+}
+
+.panel-tab.active::after {
+    transform: scaleX(1);
+}
+
+.panel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.panel-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.panel-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel-list::-webkit-scrollbar-thumb {
+    background: rgba(100, 60, 180, 0.3);
+    border-radius: 10px;
+}
+
+.panel-player {
     display: flex;
     align-items: center;
-    gap: 16px;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    margin-bottom: 6px;
+}
+
+.panel-player:hover {
+    background: rgba(100, 60, 180, 0.12);
+    border-color: rgba(100, 60, 180, 0.2);
+}
+
+.panel-player.unavailable {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.panel-player-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.panel-player-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.panel-player-avatar.av-gkp {
+    background: linear-gradient(135deg, #f9a825, #f57f17);
+}
+
+.panel-player-avatar.av-def {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+}
+
+.panel-player-avatar.av-mid {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+}
+
+.panel-player-avatar.av-fwd {
+    background: linear-gradient(135deg, #e8443a, #c62828);
+}
+
+.panel-player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.panel-player-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #e0d8f0;
+}
+
+.panel-player-pos {
+    font-size: 0.7rem;
+    color: #6a5a8a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.panel-player-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panel-player-price {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #00d4e8;
+}
+
+.panel-player.unavailable .panel-player-price {
+    color: #e8443a;
+}
+
+.panel-player.unavailable .panel-player-price::after {
+    content: ' Taken';
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+}
+
+/* Selected players section at bottom */
+.panel-selected {
+    border-top: 1px solid rgba(100, 60, 180, 0.2);
+    padding: 16px;
+    flex-shrink: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.panel-selected::-webkit-scrollbar {
+    width: 5px;
+}
+
+.panel-selected::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel-selected::-webkit-scrollbar-thumb {
+    background: rgba(100, 60, 180, 0.3);
+    border-radius: 10px;
+}
+
+.panel-selected-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #a855f7;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.panel-selected-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.panel-empty-msg {
+    color: #5a4a7a;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 12px 0;
+}
+
+.panel-selected-player {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(100, 60, 180, 0.08);
+    border-radius: 8px;
+    border: 1px solid rgba(100, 60, 180, 0.12);
+}
+
+.panel-selected-player-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.panel-selected-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.panel-cv-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1.5px solid;
+    background: transparent;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.panel-cv-btn.btn-c {
+    border-color: rgba(232, 68, 58, 0.5);
+    color: #e8443a;
+}
+
+.panel-cv-btn.btn-c:hover,
+.panel-cv-btn.btn-c.active {
+    background: #e8443a;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(232, 68, 58, 0.4);
+}
+
+.panel-cv-btn.btn-v {
+    border-color: rgba(0, 212, 232, 0.5);
+    color: #00d4e8;
+}
+
+.panel-cv-btn.btn-v:hover,
+.panel-cv-btn.btn-v.active {
+    background: #00d4e8;
+    color: #0d001a;
+    box-shadow: 0 0 12px rgba(0, 212, 232, 0.4);
+}
+
+.panel-selected-pos {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    color: #a855f7;
+    width: 24px;
+    text-align: center;
+}
+
+.panel-selected-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0d8f0;
+}
+
+.panel-selected-remove {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(232, 68, 58, 0.4);
+    background: transparent;
+    color: #e8443a;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.panel-selected-remove:hover {
+    background: rgba(232, 68, 58, 0.2);
+    border-color: #e8443a;
+    color: #fff;
+}
+
+.panel-footer {
+    margin-top: 12px;
 }
 
 .save-team-btn {
-    padding: 10px 28px;
-    font-size: 0.85rem;
+    width: 100%;
+    padding: 14px 28px;
+    font-size: 0.9rem;
     letter-spacing: 1px;
 }
 
@@ -447,6 +824,7 @@ ul {
     box-shadow: 0 4px 25px rgba(67, 160, 71, 0.3);
 }
 
+/* Toast */
 .save-toast {
     position: fixed;
     bottom: 30px;
@@ -479,242 +857,6 @@ ul {
     background: rgba(232, 68, 58, 0.9);
     color: #fff;
     box-shadow: 0 8px 30px rgba(232, 68, 58, 0.3);
-}
-
-.budget-label {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: #7a6a9a;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.budget-amount {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 1.1rem;
-    color: #00d4e8;
-}
-
-.pitch-wrapper {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-}
-
-.pitch-modal.open .pitch-wrapper {
-    animation: pitchFadeIn 0.5s ease 0.2s both;
-}
-
-@keyframes pitchFadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* Player name style in modal */
-.pitch-modal .player-name {
-    cursor: pointer;
-}
-
-.pitch-modal .player-slot {
-    position: relative;
-}
-
-/* ===== PLAYER PICKER POPUP ===== */
-.picker-popup {
-    position: fixed;
-    z-index: 1100;
-    width: 280px;
-    max-height: 360px;
-    background: linear-gradient(160deg, #1a0a30, #0f0520);
-    border: 1px solid rgba(100, 60, 180, 0.35);
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(100, 60, 180, 0.15);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px) scale(0.95);
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-    overflow: hidden;
-}
-
-.picker-popup.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-}
-
-.picker-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid rgba(100, 60, 180, 0.2);
-    background: rgba(100, 60, 180, 0.06);
-}
-
-.picker-title {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: #a855f7;
-    letter-spacing: 1px;
-}
-
-.picker-close-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    border-radius: 50%;
-    background: transparent;
-    color: #a855f7;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.picker-close-btn:hover {
-    background: rgba(168, 85, 247, 0.2);
-    color: #fff;
-}
-
-.picker-list {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 8px;
-}
-
-.picker-list::-webkit-scrollbar {
-    width: 5px;
-}
-
-.picker-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.picker-list::-webkit-scrollbar-thumb {
-    background: rgba(100, 60, 180, 0.3);
-    border-radius: 10px;
-}
-
-.picker-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-}
-
-.picker-item:hover {
-    background: rgba(100, 60, 180, 0.15);
-    border-color: rgba(100, 60, 180, 0.25);
-}
-
-.picker-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.picker-item-name {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #e0d8f0;
-}
-
-.picker-item-role {
-    font-size: 0.7rem;
-    color: #6a5a8a;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.picker-item-price {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: #00d4e8;
-    white-space: nowrap;
-}
-
-.picker-item:hover .picker-item-price {
-    color: #fff;
-}
-
-.picker-item.unavailable {
-    opacity: 0.35;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.picker-item.unavailable .picker-item-price::after {
-    content: ' (Taken)';
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.7rem;
-    color: #e8443a;
-}
-
-/* ===== C / V BUTTONS IN PICKER ===== */
-.picker-item-actions {
-    display: flex;
-    gap: 6px;
-    margin-left: 10px;
-    flex-shrink: 0;
-}
-
-.picker-cv-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: 1.5px solid;
-    background: transparent;
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 0.7rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.picker-cv-btn.btn-c {
-    border-color: rgba(232, 68, 58, 0.5);
-    color: #e8443a;
-}
-
-.picker-cv-btn.btn-c:hover,
-.picker-cv-btn.btn-c.active {
-    background: #e8443a;
-    color: #fff;
-    box-shadow: 0 0 12px rgba(232, 68, 58, 0.4);
-}
-
-.picker-cv-btn.btn-v {
-    border-color: rgba(0, 212, 232, 0.5);
-    color: #00d4e8;
-}
-
-.picker-cv-btn.btn-v:hover,
-.picker-cv-btn.btn-v.active {
-    background: #00d4e8;
-    color: #0d001a;
-    box-shadow: 0 0 12px rgba(0, 212, 232, 0.4);
-}
-
-.picker-cv-btn.disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-    pointer-events: none;
 }
 
 /* ===== CAPTAIN / VICE BADGE ON JERSEY ===== */
@@ -750,6 +892,8 @@ ul {
     background: #00d4e8;
     color: #0d001a;
 }
+
+/* ===== PLAYER PICKER (Legacy - now using panel) ===== */
 
 /* ===== CTA SECTION ===== */
 .cta-section {
@@ -1126,12 +1270,13 @@ ul {
     background: linear-gradient(135deg, #f9a825, #f57f17);
 }
 
-.jersey-number {
+.jersey-label {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 1.1rem;
-    color: #fff;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
 }
 
 .player-pos {
@@ -1209,36 +1354,50 @@ ul {
         font-size: 1.6rem;
     }
 
+    .pitch-layout {
+        flex-direction: column;
+    }
+
+    .pitch-left {
+        border-right: none;
+        border-bottom: 1px solid rgba(100, 60, 180, 0.15);
+    }
+
+    .pitch-right {
+        width: 100%;
+        max-height: 45vh;
+    }
+
     .pitch {
-        width: 320px;
-        height: 480px;
+        width: 300px;
+        height: 430px;
     }
 
     .player-jersey {
-        width: 42px;
-        height: 42px;
+        width: 38px;
+        height: 38px;
     }
 
-    .jersey-number {
-        font-size: 0.9rem;
+    .jersey-label {
+        font-size: 0.7rem;
     }
 
     .player-row {
-        gap: 16px;
+        gap: 12px;
     }
 
     .forwards-row {
-        margin-top: 50px;
+        margin-top: 45px;
     }
 
     .midfield-row,
     .defense-row,
     .keeper-row {
-        margin-top: 65px;
+        margin-top: 55px;
     }
 
     .player-name {
-        font-size: 0.6rem;
+        font-size: 0.55rem;
     }
 
     .pitch-close {
@@ -1249,23 +1408,13 @@ ul {
         font-size: 1.2rem;
     }
 
-    .pitch-modal-topbar {
+    .pitch-topbar {
         flex-direction: column;
         gap: 10px;
-        padding: 1rem 1.5rem;
+        padding: 0.8rem 1.5rem;
     }
 
-    .topbar-right {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .save-team-btn {
-        padding: 8px 22px;
-        font-size: 0.8rem;
-    }
-
-    .picker-popup {
-        width: 250px;
+    .panel-selected {
+        max-height: 120px;
     }
 }
