@@ -200,14 +200,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSaveBtn() {
-        if (!saveBtn) return;
-        if (isSaved) {
-            saveBtn.textContent = 'Team Saved';
-            saveBtn.classList.add('saved');
-        } else {
-            saveBtn.textContent = 'Save Team';
-            saveBtn.classList.remove('saved');
-        }
+        const btns = [saveBtn, transferSaveBtn].filter(Boolean);
+        btns.forEach(btn => {
+            if (isSaved) {
+                btn.textContent = 'Team Saved';
+                btn.classList.add('saved');
+                btn.disabled = true;
+            } else {
+                btn.textContent = 'Save Team';
+                btn.classList.remove('saved');
+                btn.disabled = false;
+            }
+        });
     }
 
     function addBadge(slot, letter, badgeClass) {
@@ -482,6 +486,15 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Pick a player on the pitch to swap', 'info');
     }
 
+    function renderAllBadges() {
+        getAllSlots().forEach(slot => {
+            const pos = slot.dataset.position;
+            slot.querySelector('.player-jersey').querySelectorAll('.jersey-badge').forEach(b => b.remove());
+            if (captainPos === pos) addBadge(slot, 'C', 'badge-c');
+            if (vicePos === pos) addBadge(slot, 'V', 'badge-v');
+        });
+    }
+
     function performSwap(posA, posB) {
         const playerA = selectedPlayers[posA];
         const playerB = selectedPlayers[posB];
@@ -491,10 +504,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerB) selectedPlayers[posA] = playerB;
         else delete selectedPlayers[posA];
 
-        if (captainPos === posA) captainPos = posB;
-        else if (captainPos === posB) captainPos = posA;
-        if (vicePos === posA) vicePos = posB;
-        else if (vicePos === posB) vicePos = posA;
+        // Captain / vice do NOT move with players during a substitution.
+        // If the captain was swapped, promote the vice captain to captain.
+        const captainInvolved = (captainPos === posA || captainPos === posB);
+        const viceInvolved = (vicePos === posA || vicePos === posB);
+
+        if (captainInvolved) {
+            if (vicePos && !isBenchPos(vicePos)) {
+                captainPos = vicePos;
+            } else {
+                captainPos = null;
+            }
+            vicePos = null;
+        } else if (viceInvolved) {
+            vicePos = null;
+        }
 
         [posA, posB].forEach(pos => {
             const slot = getSlot(pos);
@@ -510,15 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     nameEl.style.color = '';
                     nameEl.style.fontWeight = '';
                 }
-                slot.querySelector('.player-jersey').querySelectorAll('.jersey-badge').forEach(b => b.remove());
             }
         });
-        [posA, posB].forEach(pos => {
-            const slot = getSlot(pos);
-            if (!slot) return;
-            if (captainPos === pos) addBadge(slot, 'C', 'badge-c');
-            if (vicePos === pos) addBadge(slot, 'V', 'badge-v');
-        });
+        renderAllBadges();
 
         updateBudget();
         updateTransfersBudget();
