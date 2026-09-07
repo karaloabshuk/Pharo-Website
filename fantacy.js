@@ -947,16 +947,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ===== BRIGHTNESS =====
-    const brightnessBtn = document.getElementById('brightness-toggle');
-    const brightnessLevels = [1, 1.15, 1.35, 1.6];
-    let brightnessIndex = 0;
-    if (brightnessBtn) {
-        brightnessBtn.addEventListener('click', () => {
-            brightnessIndex = (brightnessIndex + 1) % brightnessLevels.length;
-            const level = brightnessLevels[brightnessIndex];
-            document.body.style.filter = `brightness(${level})`;
-            brightnessBtn.title = `Brightness: ${Math.round(level * 100)}%`;
+    // ===== BACKGROUND THEME =====
+    const themeBtn = document.getElementById('brightness-toggle');
+    const themes = [
+        { name: 'Night', bg: 'linear-gradient(180deg, #0d001a, #140226)' },
+        { name: 'Navy', bg: 'linear-gradient(180deg, #0b1430, #131f45)' },
+        { name: 'Forest', bg: 'linear-gradient(180deg, #0b1f16, #112d20)' },
+        { name: 'Slate', bg: 'linear-gradient(180deg, #161a22, #232936)' },
+    ];
+    let themeIndex = 0;
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            themeIndex = (themeIndex + 1) % themes.length;
+            const theme = themes[themeIndex];
+            document.body.style.background = theme.bg;
+            document.body.style.backgroundAttachment = 'fixed';
+            themeBtn.title = `Background: ${theme.name}`;
         });
     }
 
