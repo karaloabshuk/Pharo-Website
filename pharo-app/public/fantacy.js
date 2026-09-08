@@ -103,11 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-team-btn');
 
     const pickView = document.getElementById('pick-view');
-    const pointsView = document.getElementById('points-view');
-    const pointsSquadList = document.getElementById('points-squad-list');
-    const pointsTotalValue = document.getElementById('points-total-value');
-    const pointsSquadTotal = document.getElementById('points-squad-total');
-    const pointsFilter = {ALL:1,GKP:1,DEF:1,MID:1,FWD:1};
     const transferView = document.getElementById('transfer-view');
     const transferSearch = document.getElementById('transfer-search');
     const transferList = document.getElementById('transfer-list');
@@ -119,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let transferFilter = 'ALL';
 
     function getAllSlots() {
-        return Array.from(document.querySelectorAll('#pick-view .player-slot'));
+        return Array.from(document.querySelectorAll('.player-slot'));
     }
 
     function getSlot(pos) {
@@ -222,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function markDirty() {
         isSaved = false;
         updateSaveBtn();
-        renderPointsView();
     }
 
     function addBadge(slot, letter, badgeClass) {
@@ -270,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBudget();
         updateTransfersBudget();
         renderPickSummary();
-        renderPointsView();
         updateSaveBtn();
     }
 
@@ -636,20 +629,13 @@ document.addEventListener('DOMContentLoaded', () => {
             totalSpent,
             captain: captainPos,
         };
-
-        // Increment matchday on each save
-        const prevRaw = localStorage.getItem('pharo_saved_team');
-        const prev = prevRaw ? JSON.parse(prevRaw) : null;
-        savedData.matchday = prev && prev.matchday ? prev.matchday + 1 : 1;
-
         Object.keys(selectedPlayers).forEach(pos => {
             savedData.players[pos] = { name: selectedPlayers[pos].name, price: selectedPlayers[pos].price, src: selectedPlayers[pos].src };
         });
         localStorage.setItem('pharo_saved_team', JSON.stringify(savedData));
         isSaved = true;
         updateSaveBtn();
-        renderPointsView();
-        showToast(`Team saved! Matchday ${savedData.matchday}`, 'success');
+        showToast('Team saved successfully!', 'success');
     }
 
     if (saveBtn) saveBtn.addEventListener('click', saveTeam);
@@ -703,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderPickSummary();
             renderTransferList();
             renderTransferSquad();
-            renderPointsView();
         } catch (e) {
             localStorage.removeItem('pharo_saved_team');
         }
@@ -956,110 +941,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ===== POINTS VIEW =====
-    function getPointsSlots() {
-        return Array.from(document.querySelectorAll('#points-pitch .player-slot'));
-    }
-
-    function getPointsSlot(pos) {
-        return getPointsSlots().find(s => s.dataset.position === pos);
-    }
-
-    function renderPointsView() {
-        if (!pointsView || !pointsSquadList) return;
-
-        const savedRaw = localStorage.getItem('pharo_saved_team');
-        let saved = null;
-        try { saved = savedRaw ? JSON.parse(savedRaw) : null; } catch (e) { saved = null; }
-
-        const hasTeam = saved && saved.players && Object.keys(saved.players).length > 0;
-
-        // Reset all points pitch slots first
-        getPointsSlots().forEach(slot => {
-            const pos = slot.dataset.position;
-            const nameEl = slot.querySelector('.player-name');
-            const pointEl = slot.querySelector('.points-point');
-            const jersey = slot.querySelector('.player-jersey');
-            const player = hasTeam ? saved.players[pos] : null;
-
-            if (player) {
-                nameEl.textContent = player.name;
-                nameEl.style.color = '#fff';
-                nameEl.style.fontWeight = '700';
-                nameEl.style.visibility = 'visible';
-                slot.classList.remove('empty');
-            } else {
-                nameEl.textContent = '\u00A0';
-                nameEl.style.color = '';
-                nameEl.style.fontWeight = '';
-                nameEl.style.visibility = 'hidden';
-                slot.classList.add('empty');
-            }
-
-            if (pointEl) pointEl.textContent = '0';
-            jersey.querySelectorAll('.jersey-badge').forEach(b => b.remove());
-            if (hasTeam && saved.captain === pos) {
-                addBadge(slot, 'C', 'badge-c');
-            }
-        });
-
-        // Stats animation for the points count
-        document.querySelectorAll('#points-pitch .points-point').forEach(el => {
-            el.classList.add('anim');
-        });
-        setTimeout(() => {
-            document.querySelectorAll('#points-pitch .points-point').forEach(el => el.classList.remove('anim'));
-        }, 800);
-
-        if (!hasTeam) {
-            pointsSquadList.innerHTML = '<p class="panel-empty-msg">No saved team found. Pick your squad and save it first to see your matchday points.</p>';
-            if (pointsTotalValue) pointsTotalValue.textContent = '0';
-            if (pointsSquadTotal) pointsSquadTotal.textContent = '0';
-            return;
-        }
-
-        const matchday = saved.matchday || 1;
-        const mdLabel = document.getElementById('points-total-label');
-        if (mdLabel) mdLabel.textContent = `Matchday ${matchday} Total`;
-
-        // Squad performance list (all saved players, each 0)
-        pointsSquadList.innerHTML = '';
-        let listCount = 0;
-        Object.keys(saved.players).forEach(pos => {
-            const player = saved.players[pos];
-            const group = posGroupLabel(pos);
-            const srcBase = (player.src || '').replace(/[0-9]/g, '');
-            const avatarClass = avClass[player.src] || '';
-            const isCap = saved.captain === pos;
-
-            const row = document.createElement('div');
-            row.className = 'points-player-card' + (isCap ? ' captain' : '');
-
-            row.innerHTML = `
-                <div class="points-player-left">
-                    <div class="points-player-avatar ${avatarClass}">${srcBase}</div>
-                    <div class="points-player-info">
-                        <span class="points-player-name">${player.name}</span>
-                        <span class="points-player-pos">${group}${isCap ? ' · Captain' : ''}</span>
-                    </div>
-                </div>
-                <div class="points-player-right">
-                    <span class="points-player-base ${isCap ? 'c' : ''}">0${isCap ? ' ×2' : ''}</span>
-                    <span class="points-player-multiplier">${isCap ? 'C' : ''}</span>
-                    <span class="points-player-gamepoints ${isCap ? 'c' : ''}">0</span>
-                </div>
-            `;
-            pointsSquadList.appendChild(row);
-            listCount++;
-        });
-        if (listCount === 0) {
-            pointsSquadList.innerHTML = '<p class="panel-empty-msg">No players in squad yet</p>';
-        }
-
-        if (pointsTotalValue) pointsTotalValue.textContent = '0';
-        if (pointsSquadTotal) pointsSquadTotal.textContent = '0';
-    }
-
     // ===== MODAL NAV (Pick / Transfers) =====
     function switchView(view) {
         document.querySelectorAll('.modal-nav-btn').forEach(b => b.classList.remove('active'));
@@ -1067,17 +948,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.classList.add('active');
         if (view === 'pick') {
             pickView.classList.remove('hidden');
-            pointsView.classList.remove('visible');
             transferView.classList.remove('visible');
             renderPickSummary();
-        } else if (view === 'points') {
-            pickView.classList.add('hidden');
-            pointsView.classList.add('visible');
-            transferView.classList.remove('visible');
-            renderPointsView();
         } else {
             pickView.classList.add('hidden');
-            pointsView.classList.remove('visible');
             transferView.classList.add('visible');
             renderTransferList();
             renderTransferSquad();

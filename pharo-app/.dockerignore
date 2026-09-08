@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env*
+data
+*.db
+*.db-journal
+README.md
+render.yaml
+Dockerfile
+start.sh

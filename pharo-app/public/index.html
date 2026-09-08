@@ -6,7 +6,7 @@
     <title>PHARO FANTACY</title>
     <link rel="icon" type="image/png" href="image/1130809f-f594-4e10-a153-f28fe66b2243.png">
     <link rel="stylesheet" href="fantacy.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body id="top">
 
@@ -182,7 +182,6 @@
         <button class="pitch-close" id="pitch-close">&times;</button>
         <div class="modal-nav">
             <button class="modal-nav-btn active" data-view="pick">Pick Team</button>
-            <button class="modal-nav-btn" data-view="points">Points</button>
             <button class="modal-nav-btn" data-view="transfers">Transfers</button>
         </div>
         <div class="pitch-layout" id="pick-view">
@@ -299,141 +298,6 @@
                 </div>
                 <div class="pick-footer">
                     <button class="btn btn-primary save-team-btn" id="save-team-btn">Save Team</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- POINTS VIEW -->
-        <div class="points-view" id="points-view">
-            <div class="points-main">
-                <div class="points-topbar">
-                    <h2 class="section-title">Points</h2>
-                    <div class="points-total-bar">
-                        <span class="points-total-label" id="points-total-label">Matchday Total</span>
-                        <span class="points-total-value" id="points-total-value">0</span>
-                    </div>
-                </div>
-                <div class="points-info-banner">
-                    <span class="points-banner-icon">&#128200;</span>
-                    <span class="points-banner-text">Matchday points from your saved squad. Captain earns double.</span>
-                </div>
-                <div class="points-pitch-wrapper">
-                    <div class="pitch" id="points-pitch">
-                        <div class="pitch-lines">
-                            <div class="center-circle"></div>
-                            <div class="center-dot"></div>
-                            <div class="halfway-line"></div>
-                            <div class="penalty-box-top"></div>
-                            <div class="penalty-box-bottom"></div>
-                            <div class="goal-box-top"></div>
-                            <div class="goal-box-bottom"></div>
-                            <div class="penalty-dot-top"></div>
-                            <div class="penalty-dot-bottom"></div>
-                            <div class="penalty-arc-top"></div>
-                            <div class="penalty-arc-bottom"></div>
-                        </div>
-
-                        <!-- ATTACKERS -->
-                        <div class="player-row forwards-row">
-                            <div class="player-slot" data-position="FWD1">
-                                <div class="player-jersey jersey-forward"><span class="jersey-label">ATT</span></div>
-                                <span class="player-pos">ATT</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="FWD2">
-                                <div class="player-jersey jersey-forward"><span class="jersey-label">ATT</span></div>
-                                <span class="player-pos">ATT</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="FWD3">
-                                <div class="player-jersey jersey-forward"><span class="jersey-label">ATT</span></div>
-                                <span class="player-pos">ATT</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                        </div>
-
-                        <!-- MIDFIELDERS -->
-                        <div class="player-row midfield-row">
-                            <div class="player-slot" data-position="MID1">
-                                <div class="player-jersey jersey-midfield"><span class="jersey-label">MID</span></div>
-                                <span class="player-pos">MID</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="MID2">
-                                <div class="player-jersey jersey-midfield"><span class="jersey-label">MID</span></div>
-                                <span class="player-pos">MID</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="MID3">
-                                <div class="player-jersey jersey-midfield"><span class="jersey-label">MID</span></div>
-                                <span class="player-pos">MID</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                        </div>
-
-                        <!-- DEFENDERS -->
-                        <div class="player-row defense-row">
-                            <div class="player-slot" data-position="DEF1">
-                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
-                                <span class="player-pos">DEF</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="DEF2">
-                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
-                                <span class="player-pos">DEF</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="DEF3">
-                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
-                                <span class="player-pos">DEF</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                            <div class="player-slot" data-position="DEF4">
-                                <div class="player-jersey jersey-defense"><span class="jersey-label">DEF</span></div>
-                                <span class="player-pos">DEF</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                        </div>
-
-                        <!-- GOALKEEPER -->
-                        <div class="player-row keeper-row">
-                            <div class="player-slot" data-position="GKP1">
-                                <div class="player-jersey jersey-keeper"><span class="jersey-label">GK</span></div>
-                                <span class="player-pos">GK</span>
-                                <span class="player-name">Pick a Player</span>
-                                <span class="points-point">0</span>
-                                <span class="points-point-label">PT</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="points-squad">
-                <h3 class="points-squad-title">Squad Performance</h3>
-                <div class="points-squad-list" id="points-squad-list"><p class="panel-empty-msg">No players in squad yet</p></div>
-                <div class="points-squad-total">
-                    <span>Starting XI Total</span>
-                    <span class="points-total-value" id="points-squad-total">0</span>
                 </div>
             </div>
         </div>
